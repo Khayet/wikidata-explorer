@@ -16,15 +16,27 @@ function displayResponse() {
     document.getElementById("displayWikidata")
         .textContent = this.responseText
 }
-    
 
-// TODO: Make this asynchronous
+function parseResponse() {
+    console.log("Parsing response..")
+    response = JSON.parse(this.responseText)
+
+    let results = ""
+    for (let i = 0; i < response.results.bindings.length; i++) {
+        results += response.results.bindings[i].itemLabel.value + "\n"
+    }
+
+    document.getElementById("displayWikidata")
+        .textContent += query + "\n\n" + results
+}
+    
 function getWikidata(query) {
     console.log("Sending Request")
     let httpRequest = new XMLHttpRequest()
-    httpRequest.addEventListener("load", displayResponse)
+    httpRequest.addEventListener("load", logResponse)
+    httpRequest.addEventListener("load", parseResponse)
     httpRequest.open(
         "GET", 
-        "https://query.wikidata.org/sparql?query=" + query + "&format=json")
+        "https://query.wikidata.org/sparql?query=" + query + "&format=json", true)
     httpRequest.send()
 }
