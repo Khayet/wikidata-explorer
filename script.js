@@ -1,7 +1,7 @@
 // query wikidata:
 
 // This should display a sample Wikidata response. We can request either xml, or json, i think.
-query = "SELECT ?item ?itemLabel WHERE { ?item wdt:P31 wd:Q146. SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". } }"
+query = "SELECT ?item ?itemLabel WHERE { ?item wdt:P31 wd:Q146. SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". } } LIMIT 10"
 
 button = document.getElementById("getWikidata")
 button.addEventListener("click", function() { getWikidata(query) })
@@ -12,8 +12,9 @@ function logResponse() {
 }
 
 function displayResponse() {
+    console.log("Printing response text..")
     document.getElementById("displayWikidata")
-        .textContent = this.responseText 
+        .textContent = this.responseText
 }
     
 
@@ -24,6 +25,6 @@ function getWikidata(query) {
     httpRequest.addEventListener("load", displayResponse)
     httpRequest.open(
         "GET", 
-        "https://query.wikidata.org/sparql?query=" + query)
+        "https://query.wikidata.org/sparql?query=" + query + "&format=json")
     httpRequest.send()
 }
