@@ -1,14 +1,12 @@
 "use strict"
 
-getWikidata("wd:Q103")
-console.log(d3.selectAll("p").style("color", function() {
-    return "hsl(" + Math.random() * 360 + ",100%,50%)"
-}))
+getWikidata("wd:Q5")
 
 function getWikidata(entity) {
     console.log("Sending Request")
-    // const query = constructQueryInstancesOf(entity, 20) 
     const query = constructQueryPropsAndObjects(entity, 20) 
+
+    document.getElementById("sampleEntity").textContent = entity
     
     const httpRequest = new XMLHttpRequest()
     httpRequest.addEventListener("load", console.log(httpRequest.responseText))
@@ -57,6 +55,7 @@ function parseResponse(res) {
     const properties = [], objects = []
     const propertyLabels = [], objectLabels = []
     const results = response.results.bindings 
+
     for (let i = 0; i < results.length; i++) {
         properties.push(results[i].prop.value)
         objects.push(results[i].prop.value)
@@ -64,8 +63,29 @@ function parseResponse(res) {
         objectLabels.push(results[i].objectLabel.value)
     }
 
-    for (let i = 0; i < results.length; i++) {
-        document.getElementById("displayWikidata")
-            .textContent += propertyLabels[i] + " ... " + objectLabels[i] + "\n"
-    }
+    visualizeResults(properties, objects, propertyLabels, objectLabels)
+
+    // for (let i = 0; i < results.length; i++) {
+    //     document.getElementById("wikidata")
+    //         .textContent += propertyLabels[i] + " ... " + objectLabels[i] + "\n"
+    // }
 }
+
+function visualizeResults(properties, objects, propertyLabels, objectLabels) {
+    let svg = d3.select("svg")
+        .style("background-color", "rgb(200, 200, 255)")
+
+    let circles = svg.selectAll("circle")
+        .data(objectLabels)
+        
+    circles.enter().append("circle")
+        .style("fill", "black")
+        .attr("r", 40)
+        .attr("cx", function(d, i) { return i * 90 })
+        .attr("cy", 100)
+        // .attr("stroke", "white")
+        .attr("text", function(d) { return d })
+
+        svg.exit().remove()
+    }
+
