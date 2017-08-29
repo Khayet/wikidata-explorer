@@ -1,15 +1,34 @@
-button = document.getElementById("getWikidata")
-button.addEventListener("click", function() { getWikidata("wd:Q5") }) // wd:Q146 -> cat
+"use strict"
 
-function constructQueryInstancesOf(entity) {
+const button = document.getElementById("getWikidata")
+button.addEventListener("click", function() { getWikidata("wd:Q963") }) // wd:Q146 -> cat
+
+//see: https://stackoverflow.com/questions/25100224/how-to-get-a-list-of-all-wikidata-properties
+function constructQueryPropsAndObjects(entity, limit = 10) {
+    const query =
+        "SELECT ?prop ?propLabel ?object ?objectLabel " +
+        "WHERE  { " +
+        entity + " ?propUrl ?object . " +
+        "?prop ?ref ?propUrl . " +
+        "?prop rdf:type wikibase:Property . " +
+        "?object rdfs:label ?objectLabel . " +
+        "SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". } " +
+        "FILTER (LANG(?objectLabel) = 'en') . " +
+        "} " +
+        "LIMIT " + limit
+    console.log(query)
+    return query
+} 
+
+function constructQueryInstancesOf(entity, limit = 10) {
     // constructs a query querying all entities that are instances of the passed entity
-    let query =  
+    const query =  
         "SELECT ?item ?itemLabel " + 
         "WHERE { " +
         "?item wdt:P31 " + entity + ". " +
         "SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". } " +
         "} " +
-        "LIMIT 10 "
+        "LIMIT " + limit
     console.log(query)
     return query
 }
@@ -24,26 +43,34 @@ function displayResponse() {
         .textContent = this.responseText
 }
 
-function parseResponse() {
+function parseResponse(res) {
     console.log("Parsing response..")
-    console.log(this.responseText)
-    response = JSON.parse(this.responseText)
-
-    let results = ""
-    for (let i = 0; i < response.results.bindings.length; i++) {
-        results += response.results.bindings[i].item.value + ": " + response.results.bindings[i].itemLabel.value + "\n"
+    console.log(res)
+    const response = JSON.parse(res)
+    const properties = []
+    const objects = []
+    const results = response.results.bindings 
+    for (let i = 0; i < results.length; i++) {
+        properties.push(results[i].propLabel.value)
+        objects.push(results[i].objectLabel.value)
+        // results += response.results.bindings[i].propLabel.value + "   " + response.results.bindings[i].objectLabel.value + "\n"
+        // results += response.results.bindings[i].item.value + ": " + response.results.bindings[i].itemLabel.value + "\n"
     }
 
-    document.getElementById("displayWikidata")
-        .textContent += results
+    for (let i = 0; i < results.length; i++) {
+        document.getElementById("displayWikidata")
+            .textContent += properties[i] + " ... " + objects[i] + "\n"
+    }
 }
     
 function getWikidata(entity) {
     console.log("Sending Request")
-    let query = constructQueryInstancesOf(entity) 
-    let httpRequest = new XMLHttpRequest()
-    httpRequest.addEventListener("load", console.log(this.responseText))
-    httpRequest.addEventListener("load", parseResponse)
+    // const query = constructQueryInstancesOf(entity, 20) 
+    const query = constructQueryPropsAndObjects(entity, 20) 
+    
+    const httpRequest = new XMLHttpRequest()
+    httpRequest.addEventListener("load", console.log(httpRequest.responseText))
+    httpRequest.addEventListener("load", function() { return parseResponse(httpRequest.responseText) })
     httpRequest.open(
         "GET", 
         "https://query.wikidata.org/sparql?query=" + query + "&format=json", true)
