@@ -72,20 +72,28 @@ function parseResponse(res) {
 }
 
 function visualizeResults(properties, objects, propertyLabels, objectLabels) {
+    // See: https://stackoverflow.com/questions/13615381/d3-add-text-to-circle
+
     let svg = d3.select("svg")
         .style("background-color", "rgb(200, 200, 255)")
 
-    let circles = svg.selectAll("circle")
+    let groups = svg.selectAll("g") //TODO: find better name
         .data(objectLabels)
         
-    circles.enter().append("circle")
-        .style("fill", "black")
-        .attr("r", 40)
-        .attr("cx", function(d, i) { return i * 90 })
-        .attr("cy", 100)
-        // .attr("stroke", "white")
-        .attr("text", function(d) { return d })
+    let nodes = groups.enter()
+        .append("g")
+        .attr("transform", function(d, i) { return "translate(" + i*90 + ",100)"} )
 
-        svg.exit().remove()
-    }
+    let circles = nodes.append("circle")
+        .attr("r", 40)
+        .style("fill", "black")
+
+    let texts = nodes.append("text")
+        .text(function (d) { return d })
+        .style("fill", "white")
+
+    // groups.exit().remove()
+
+
+}
 
