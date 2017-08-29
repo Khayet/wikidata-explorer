@@ -1,7 +1,10 @@
 "use strict"
 
 getWikidata("wd:Q103")
- 
+console.log(d3.selectAll("p").style("color", function() {
+    return "hsl(" + Math.random() * 360 + ",100%,50%)"
+}))
+
 function getWikidata(entity) {
     console.log("Sending Request")
     // const query = constructQueryInstancesOf(entity, 20) 
@@ -30,7 +33,7 @@ function constructQueryPropsAndObjects(entity, limit = 10) {
         "FILTER (LANG(?objectLabel) = 'en') . " +
         "} " +
         "LIMIT " + limit
-    console.log(query)
+    // console.log(query)
     return query
 } 
 
@@ -44,13 +47,12 @@ function constructQueryInstancesOf(entity, limit = 10) {
         "SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". } " +
         "} " +
         "LIMIT " + limit
-    console.log(query)
+    // console.log(query)
     return query
 }
 
 function parseResponse(res) {
     console.log("Parsing response..")
-    console.log(res)
     const response = JSON.parse(res)
     const properties = [], objects = []
     const propertyLabels = [], objectLabels = []
