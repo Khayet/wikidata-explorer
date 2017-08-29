@@ -21,14 +21,16 @@ function constructQueryPropsAndObjects(entity, limit = 10) {
     // Queries all properties associated entities of the given entity.
     // See: https://stackoverflow.com/questions/25100224/how-to-get-a-list-of-all-wikidata-properties
     const query =
-        "SELECT ?prop ?propLabel ?object ?objectLabel " +
+        "SELECT ?entityLabel ?prop ?propLabel ?object ?objectLabel " +
         "WHERE  { " +
         entity + " ?propUrl ?object . " +
         "?prop ?ref ?propUrl . " +
         "?prop rdf:type wikibase:Property . " +
         "?object rdfs:label ?objectLabel . " +
+        entity + " rdfs:label ?entityLabel . " +
         "SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". } " +
         "FILTER (LANG(?objectLabel) = 'en') . " +
+        "FILTER (LANG(?entityLabel) = 'en') . " +
         "} " +
         "LIMIT " + limit
     // console.log(query)
@@ -54,7 +56,12 @@ function parseResponse(res) {
     const response = JSON.parse(res)
     const properties = [], objects = []
     const propertyLabels = [], objectLabels = []
+
     const results = response.results.bindings 
+
+    // entityLabel should be the same for all results
+    const entityLabel = []
+    entityLabel.push(results[0].entityLabel.value)
 
     for (let i = 0; i < results.length; i++) {
         properties.push(results[i].prop.value)
@@ -63,33 +70,43 @@ function parseResponse(res) {
         objectLabels.push(results[i].objectLabel.value)
     }
 
-    visualizeResults(properties, objects, propertyLabels, objectLabels)
-
-    // for (let i = 0; i < results.length; i++) {
-    //     document.getElementById("wikidata")
-    //         .textContent += propertyLabels[i] + " ... " + objectLabels[i] + "\n"
-    // }
+    visualizeResults(entityLabel, properties, objects, propertyLabels, objectLabels)
 }
 
-function visualizeResults(properties, objects, propertyLabels, objectLabels) {
+function visualizeResults(entityLabel, properties, objects, propertyLabels, objectLabels) {
     // See: https://stackoverflow.com/questions/13615381/d3-add-text-to-circle
 
     let svg = d3.select("svg")
         .style("background-color", "rgb(200, 200, 255)")
 
+
     let groups = svg.selectAll("g") //TODO: find better name
         .data(objectLabels)
-        
+
+    // let rootNode = rootGroup.enter()
+    //     .append("g")
+    //     .attr("transform", "translate(100, 400)")
+
+    // let rootNodeCircle = rootNode.append("circle")
+    //     .attr("r", 30)
+    //     .style("fill", "rgb(255, 30, 30)")
+
+    // let rootNodeText = rootNode.append("text")
+    //     .text(function (d) { return d })
+    //     .attr("text-anchor", "middle")
+    //     .style("fill", "white")
+
     let nodes = groups.enter()
         .append("g")
-        .attr("transform", function(d, i) { return "translate(" + i*90 + ",100)"} )
-
-    let circles = nodes.append("circle")
+        .attr("transform", function(d, i) { return "translate(" + i*80 + ",100)"} )
+        
+        let circles = nodes.append("circle")
         .attr("r", 40)
         .style("fill", "black")
 
     let texts = nodes.append("text")
         .text(function (d) { return d })
+        .attr("text-anchor", "middle")
         .style("fill", "white")
 
     // groups.exit().remove()
