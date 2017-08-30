@@ -79,32 +79,38 @@ function visualizeResults(entityLabel, properties, objects, propertyLabels, obje
     let svg = d3.select("svg")
         .style("background-color", "rgb(200, 200, 255)")
 
+    let rootSelection = svg.selectAll("g")
+    .data(entityLabel)
+    
+    let rootNode = rootSelection.enter()
+    .append("g")
+    .attr("transform", "translate(" + (svg.attr("width") / 2) + ", " + (svg.attr("height") / 2) + ")")
+    .attr("id", "root")
+    
+    console.log(rootNode.attr("transform"))
 
-    let groups = svg.selectAll("g") //TODO: find better name
+    let rootNodeCircle = rootNode.append("circle")
+    .attr("r", 30)
+    .style("fill", "rgb(255, 30, 30)")
+    
+    let rootNodeText = rootNode.append("text")
+    .text(function (d) { return d })
+    .attr("text-anchor", "middle")
+    .style("fill", "white")
+    
+
+    let leaveSelection = svg.selectAll("g:not(#root)") //TODO: find better name
         .data(objectLabels)
 
-    // let rootNode = rootGroup.enter()
-    //     .append("g")
-    //     .attr("transform", "translate(100, 400)")
-
-    // let rootNodeCircle = rootNode.append("circle")
-    //     .attr("r", 30)
-    //     .style("fill", "rgb(255, 30, 30)")
-
-    // let rootNodeText = rootNode.append("text")
-    //     .text(function (d) { return d })
-    //     .attr("text-anchor", "middle")
-    //     .style("fill", "white")
-
-    let nodes = groups.enter()
+    let leaveNodes = leaveSelection.enter()
         .append("g")
         .attr("transform", function(d, i) { return "translate(" + i*80 + ",100)"} )
         
-        let circles = nodes.append("circle")
+        let circles = leaveNodes.append("circle")
         .attr("r", 40)
         .style("fill", "black")
 
-    let texts = nodes.append("text")
+    let texts = leaveNodes.append("text")
         .text(function (d) { return d })
         .attr("text-anchor", "middle")
         .style("fill", "white")
