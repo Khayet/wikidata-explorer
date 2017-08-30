@@ -83,10 +83,12 @@ function parseResponse(res) {
 function visualizeResults(entityLabel, properties, objects, propertyLabels, objectLabels) {
     // See: https://stackoverflow.com/questions/13615381/d3-add-text-to-circle
     const leaveColor = "rgba(50, 200, 100, 0.7)"
-
-
+    
     const svg = d3.select("svg")
-        .style("background-color", "rgb(200, 200, 255)")
+    .style("background-color", "rgb(200, 200, 255)")
+
+    const centerX = svg.attr("width") / 2
+    const centerY = svg.attr("height") / 2
 
     const rootSelection = svg.selectAll("g#root")
         .data(entityLabel)
@@ -100,7 +102,7 @@ function visualizeResults(entityLabel, properties, objects, propertyLabels, obje
 
     const rootNode = rootSelection.enter()
         .append("g")
-        .attr("transform", "translate(" + (svg.attr("width") / 2) + ", " + (svg.attr("height") / 2) + ")")
+        .attr("transform", "translate(" + centerX + ", " + centerY + ")")
         .attr("id", "root")
     
     rootNodeCircle = rootNode.append("circle")
@@ -129,7 +131,13 @@ function visualizeResults(entityLabel, properties, objects, propertyLabels, obje
 
     const newLeaveNodes = leaveSelection.enter()
         .append("g")
-        .attr("transform", (d, i) => { return "translate(" + i*140 + ",100)"} )
+        .attr("transform", (d, i) => 
+            { 
+                return "translate(" + 
+                    arrangeInCircle(i, 20.0, 300, centerX, centerY)[0] + ", " + 
+                    arrangeInCircle(i, 20.0, 300, centerX, centerY)[1] + 
+                    ")" 
+            }) 
         
     circles = newLeaveNodes.append("circle")
         .attr("r", 40)
@@ -152,4 +160,13 @@ function selectEntity(index, entities) {
     // send new query
     console.log("select entity " + index + " " + entities[index])
     getWikidata(entities[index], 20)
+}
+
+function arrangeInCircle(index, num, radius, cx=0.0, cy=0.0) {
+    let x = 0.0, y = 0.0
+
+    x = radius * Math.cos(index * (2*Math.PI / num)) + cx
+    y = radius * Math.sin(index * (2*Math.PI / num)) + cy
+
+    return [x, y]
 }
