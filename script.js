@@ -1,6 +1,6 @@
 "use strict"
 
-getWikidata("wd:Q5")
+getWikidata("wd:Q42")
 
 function getWikidata(entity) {
     console.log("Sending Request")
@@ -23,7 +23,7 @@ function constructQueryPropsAndObjects(entity, limit = 10) {
     // See: https://stackoverflow.com/questions/25100224/how-to-get-a-list-of-all-wikidata-properties
     // Also: https://query.wikidata.org/ example: data of douglas adams
     const query =
-        "SELECT ?entityLabel ?prop ?propLabel ?object ?objectLabel " +
+        "SELECT DISTINCT ?entityLabel ?prop ?propLabel ?object ?objectLabel " +
         "WHERE  { " +
         entity + " ?propUrl ?object . " + // get all propertyUrls and objects of entity
         "?prop ?ref ?propUrl . " + // get property referred to by url
@@ -56,7 +56,6 @@ function constructQueryInstancesOf(entity, limit = 10) {
 
 function parseResponse(res) {
     console.log("Parsing response..")
-    console.log(res)
     const response = JSON.parse(res)
     const properties = [], objects = []
     const propertyLabels = [], objectLabels = []
@@ -67,9 +66,13 @@ function parseResponse(res) {
     const entityLabel = []
     entityLabel.push(results[0].entityLabel.value)
 
-    for (let i = 0; i < results.length; i++) {
+    for (let i = 0; i < results.length; i++) 
+    {
+        const objUrlParts = results[i].object.value.split("/")
+        const obj = objUrlParts[objUrlParts.length -1]
+
         properties.push(results[i].prop.value)
-        objects.push(results[i].object.value)
+        objects.push("wd:" + obj)
         propertyLabels.push(results[i].propLabel.value)
         objectLabels.push(results[i].objectLabel.value)
     }
@@ -79,53 +82,74 @@ function parseResponse(res) {
 
 function visualizeResults(entityLabel, properties, objects, propertyLabels, objectLabels) {
     // See: https://stackoverflow.com/questions/13615381/d3-add-text-to-circle
+    const leaveColor = "rgba(50, 200, 100, 0.7)"
+
 
     const svg = d3.select("svg")
         .style("background-color", "rgb(200, 200, 255)")
 
+    const rootSelection = svg.selectAll("g#root")
+        .data(entityLabel)
 
-    const rootSelection = svg.selectAll("g")
-    .data(entityLabel)
+    // update root
+    let rootNodeCircle = rootSelection.select("g>circle")
+        // . ...update root node circle
     
+    let rootNodeText = rootSelection.select("g>text")
+        .text((d) => { return d })
+
     const rootNode = rootSelection.enter()
-    .append("g")
-    .attr("transform", "translate(" + (svg.attr("width") / 2) + ", " + (svg.attr("height") / 2) + ")")
-    .attr("id", "root")
+        .append("g")
+        .attr("transform", "translate(" + (svg.attr("width") / 2) + ", " + (svg.attr("height") / 2) + ")")
+        .attr("id", "root")
     
-    console.log(rootNode.attr("transform"))
+    rootNodeCircle = rootNode.append("circle")
+        .attr("r", 30)
+        .style("fill", "rgb(255, 30, 30)")
+    
+    rootNodeText = rootNode.append("text")
+        .text((d) => { return d })
+        .attr("font-family", "Verdana, sans-serif")
+        .attr("font-size", "150%")
+        .attr("text-anchor", "middle")
+        .style("fill", "white")
+    
 
-    const rootNodeCircle = rootNode.append("circle")
-    .attr("r", 30)
-    .style("fill", "rgb(255, 30, 30)")
-    
-    const rootNodeText = rootNode.append("text")
-    .text((d) => { return d })
-    .attr("text-anchor", "middle")
-    .style("fill", "white")
-    
-
+    // update leaves
     const leaveSelection = svg.selectAll("g:not(#root)")
         .data(objectLabels)
 
-    const leaveNodes = leaveSelection.enter()
+
+    let circles = leaveSelection.selectAll("g>circle")
+        // . ...update circles
+
+    let texts = leaveSelection.selectAll("g>text")
+        .text((d) => { return d })
+
+
+    const newLeaveNodes = leaveSelection.enter()
         .append("g")
-        .attr("transform", (d, i) => { return "translate(" + i*80 + ",100)"} )
+        .attr("transform", (d, i) => { return "translate(" + i*140 + ",100)"} )
         
-    const circles = leaveNodes.append("circle")
+    circles = newLeaveNodes.append("circle")
         .attr("r", 40)
-        .style("fill", "black")
+        .style("fill", leaveColor)
         .on("mouseover", function(d) { d3.select(this).style("fill", "blue") })
-        .on("mouseleave", function() { d3.select(this).style("fill", "black") })
+        .on("mouseleave", function() { d3.select(this).style("fill", leaveColor) })
         .on("click", function(d, i) { return selectEntity(i, objects) } )
 
-    const texts = leaveNodes.append("text")
+    texts = newLeaveNodes.append("text")
         .text((d) => { return d })
+        .attr("font-family", "Verdana, sans-serif")
+        .attr("font-size", "150%")        
         .attr("text-anchor", "middle")
-        .style("fill", "white")
+        .style("fill", "black")
 
-    // groups.exit().remove()
+    // leaveNodes.exit().remove()
 }
 
 function selectEntity(index, entities) {
+    // send new query
     console.log("select entity " + index + " " + entities[index])
+    getWikidata(entities[index], 20)
 }
