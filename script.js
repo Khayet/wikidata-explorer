@@ -17,20 +17,23 @@ function getWikidata(entity) {
     httpRequest.send()
 }
 
+
 function constructQueryPropsAndObjects(entity, limit = 10) {
     // Queries all properties associated entities of the given entity.
     // See: https://stackoverflow.com/questions/25100224/how-to-get-a-list-of-all-wikidata-properties
+    // Also: https://query.wikidata.org/ example: data of douglas adams
     const query =
         "SELECT ?entityLabel ?prop ?propLabel ?object ?objectLabel " +
         "WHERE  { " +
-        entity + " ?propUrl ?object . " +
-        "?prop ?ref ?propUrl . " +
-        "?prop rdf:type wikibase:Property . " +
-        "?object rdfs:label ?objectLabel . " +
-        entity + " rdfs:label ?entityLabel . " +
+        entity + " ?propUrl ?object . " + // get all propertyUrls and objects of entity
+        "?prop ?ref ?propUrl . " + // get property referred to by url
+        "?prop rdf:type wikibase:Property .  " + // restrict to wikibases properties
+        "?object rdfs:label ?objectLabel . " + // get label of objects "
+        entity + " rdfs:label ?entityLabel .  " + // get label of our entity
         "SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". } " +
         "FILTER (LANG(?objectLabel) = 'en') . " +
         "FILTER (LANG(?entityLabel) = 'en') . " +
+        "FILTER (?propUrl != wdt:P1963) . " + // specifically exclude "properties for this type"-property
         "} " +
         "LIMIT " + limit
     // console.log(query)
@@ -53,6 +56,7 @@ function constructQueryInstancesOf(entity, limit = 10) {
 
 function parseResponse(res) {
     console.log("Parsing response..")
+    console.log(res)
     const response = JSON.parse(res)
     const properties = [], objects = []
     const propertyLabels = [], objectLabels = []
@@ -65,7 +69,7 @@ function parseResponse(res) {
 
     for (let i = 0; i < results.length; i++) {
         properties.push(results[i].prop.value)
-        objects.push(results[i].prop.value)
+        objects.push(results[i].object.value)
         propertyLabels.push(results[i].propLabel.value)
         objectLabels.push(results[i].objectLabel.value)
     }
@@ -112,6 +116,7 @@ function visualizeResults(entityLabel, properties, objects, propertyLabels, obje
         .style("fill", "black")
         .on("mouseover", function(d) { d3.select(this).style("fill", "blue") })
         .on("mouseleave", function() { d3.select(this).style("fill", "black") })
+        .on("click", function(d, i) { return selectEntity(i, objects) } )
 
     const texts = leaveNodes.append("text")
         .text((d) => { return d })
@@ -121,6 +126,6 @@ function visualizeResults(entityLabel, properties, objects, propertyLabels, obje
     // groups.exit().remove()
 }
 
-// function circleMouseOver() {
-//     d3.select(this)
-// }
+function selectEntity(index, entities) {
+    console.log("select entity " + index + " " + entities[index])
+}
