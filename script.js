@@ -76,44 +76,44 @@ function parseResponse(res) {
 function visualizeResults(entityLabel, properties, objects, propertyLabels, objectLabels) {
     // See: https://stackoverflow.com/questions/13615381/d3-add-text-to-circle
 
-    let svg = d3.select("svg")
+    const svg = d3.select("svg")
         .style("background-color", "rgb(200, 200, 255)")
 
 
-    let rootSelection = svg.selectAll("g")
+    const rootSelection = svg.selectAll("g")
     .data(entityLabel)
     
-    let rootNode = rootSelection.enter()
+    const rootNode = rootSelection.enter()
     .append("g")
     .attr("transform", "translate(" + (svg.attr("width") / 2) + ", " + (svg.attr("height") / 2) + ")")
     .attr("id", "root")
     
     console.log(rootNode.attr("transform"))
 
-    let rootNodeCircle = rootNode.append("circle")
+    const rootNodeCircle = rootNode.append("circle")
     .attr("r", 30)
     .style("fill", "rgb(255, 30, 30)")
     
-    let rootNodeText = rootNode.append("text")
+    const rootNodeText = rootNode.append("text")
     .text((d) => { return d })
     .attr("text-anchor", "middle")
     .style("fill", "white")
     
 
-    let leaveSelection = svg.selectAll("g:not(#root)")
+    const leaveSelection = svg.selectAll("g:not(#root)")
         .data(objectLabels)
 
-    let leaveNodes = leaveSelection.enter()
+    const leaveNodes = leaveSelection.enter()
         .append("g")
         .attr("transform", (d, i) => { return "translate(" + i*80 + ",100)"} )
         
-    let circles = leaveNodes.append("circle")
+    const circles = leaveNodes.append("circle")
         .attr("r", 40)
         .style("fill", "black")
         .on("mouseover", function(d) { d3.select(this).style("fill", "blue") })
         .on("mouseleave", function() { d3.select(this).style("fill", "black") })
 
-    let texts = leaveNodes.append("text")
+    const texts = leaveNodes.append("text")
         .text((d) => { return d })
         .attr("text-anchor", "middle")
         .style("fill", "white")
