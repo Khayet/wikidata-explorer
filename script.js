@@ -95,7 +95,7 @@ function visualizeResults(entityLabel, properties, objects, propertyLabels, obje
     .style("fill", "rgb(255, 30, 30)")
     
     let rootNodeText = rootNode.append("text")
-    .text(function (d) { return d })
+    .text((d) => { return d })
     .attr("text-anchor", "middle")
     .style("fill", "white")
     
@@ -105,7 +105,7 @@ function visualizeResults(entityLabel, properties, objects, propertyLabels, obje
 
     let leaveNodes = leaveSelection.enter()
         .append("g")
-        .attr("transform", function(d, i) { return "translate(" + i*80 + ",100)"} )
+        .attr("transform", (d, i) => { return "translate(" + i*80 + ",100)"} )
         
     let circles = leaveNodes.append("circle")
         .attr("r", 40)
@@ -114,7 +114,7 @@ function visualizeResults(entityLabel, properties, objects, propertyLabels, obje
         .on("mouseleave", function() { d3.select(this).style("fill", "black") })
 
     let texts = leaveNodes.append("text")
-        .text(function (d) { return d })
+        .text((d) => { return d })
         .attr("text-anchor", "middle")
         .style("fill", "white")
 
