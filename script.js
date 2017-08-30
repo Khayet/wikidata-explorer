@@ -79,6 +79,7 @@ function visualizeResults(entityLabel, properties, objects, propertyLabels, obje
     let svg = d3.select("svg")
         .style("background-color", "rgb(200, 200, 255)")
 
+
     let rootSelection = svg.selectAll("g")
     .data(entityLabel)
     
@@ -99,16 +100,18 @@ function visualizeResults(entityLabel, properties, objects, propertyLabels, obje
     .style("fill", "white")
     
 
-    let leaveSelection = svg.selectAll("g:not(#root)") //TODO: find better name
+    let leaveSelection = svg.selectAll("g:not(#root)")
         .data(objectLabels)
 
     let leaveNodes = leaveSelection.enter()
         .append("g")
         .attr("transform", function(d, i) { return "translate(" + i*80 + ",100)"} )
         
-        let circles = leaveNodes.append("circle")
+    let circles = leaveNodes.append("circle")
         .attr("r", 40)
         .style("fill", "black")
+        .on("mouseover", function(d) { d3.select(this).style("fill", "blue") })
+        .on("mouseleave", function() { d3.select(this).style("fill", "black") })
 
     let texts = leaveNodes.append("text")
         .text(function (d) { return d })
@@ -116,7 +119,8 @@ function visualizeResults(entityLabel, properties, objects, propertyLabels, obje
         .style("fill", "white")
 
     // groups.exit().remove()
-
-
 }
 
+// function circleMouseOver() {
+//     d3.select(this)
+// }
