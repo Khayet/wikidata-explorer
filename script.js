@@ -36,7 +36,7 @@ function constructQueryPropsAndObjects(entity, limit = 10) {
         "FILTER (?propUrl != wdt:P1963) . " + // specifically exclude "properties for this type"-property
         "} " +
         "LIMIT " + limit
-    // console.log(query)
+    console.log(query)
     return query
 } 
 
@@ -83,6 +83,8 @@ function parseResponse(res) {
 function visualizeResults(entityLabel, properties, objects, propertyLabels, objectLabels) {
     // See: https://stackoverflow.com/questions/13615381/d3-add-text-to-circle
     const leaveColor = "rgba(50, 200, 100, 0.7)"
+    const num_nodes = objectLabels.length
+    console.log(num_nodes)
     
     const svg = d3.select("svg")
     .style("background-color", "rgb(200, 200, 255)")
@@ -118,24 +120,29 @@ function visualizeResults(entityLabel, properties, objects, propertyLabels, obje
     
 
     // update leaves
-    const leaveSelection = svg.selectAll("g:not(#root)")
+    let leaveSelection = svg.selectAll("g:not(#root)")
         .data(objectLabels)
-
+        .attr("transform", (d, i) => 
+        { 
+            return "translate(" + 
+                arrangeInCircle(i, objectLabels.length, 300, centerX, centerY)[0] + ", " + 
+                arrangeInCircle(i, objectLabels.length, 300, centerX, centerY)[1] + 
+                ")" 
+        }) 
 
     let circles = leaveSelection.selectAll("g>circle")
-        // . ...update circles
+    // . ...update leav node circles
 
     let texts = leaveSelection.selectAll("g>text")
         .text((d) => { return d })
-
 
     const newLeaveNodes = leaveSelection.enter()
         .append("g")
         .attr("transform", (d, i) => 
             { 
                 return "translate(" + 
-                    arrangeInCircle(i, 20.0, 300, centerX, centerY)[0] + ", " + 
-                    arrangeInCircle(i, 20.0, 300, centerX, centerY)[1] + 
+                    arrangeInCircle(i, objectLabels.length, 300, centerX, centerY)[0] + ", " + 
+                    arrangeInCircle(i, objectLabels.length, 300, centerX, centerY)[1] + 
                     ")" 
             }) 
         
@@ -153,7 +160,8 @@ function visualizeResults(entityLabel, properties, objects, propertyLabels, obje
         .attr("text-anchor", "middle")
         .style("fill", "black")
 
-    // leaveNodes.exit().remove()
+    leaveSelection.exit()
+        .remove()
 }
 
 function selectEntity(index, entities) {
