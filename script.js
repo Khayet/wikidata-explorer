@@ -2,7 +2,7 @@
 
 let selectedEntity = "wd:Q42"
 const qs = queryService
-qs.setCallback(visualizeTree)
+qs.setCallback(visualize)
 qs.setRoot(selectedEntity)
 
 // TODO: clean this code
@@ -10,7 +10,7 @@ function visualize(tree) {
     // See: https://stackoverflow.com/questions/13615381/d3-add-text-to-circle
 
 
-    const rootLabel = [tree["root"]]
+    const rootLabel = [tree["name"]]
 
     const labels = [], objects = []
     for (let i = 0; i < tree["children"].length; i++)
@@ -51,7 +51,6 @@ function visualize(tree) {
 
     leafSelection.selectAll("g>circle")
         .on("click", function(d, i) { 
-            console.log(objects[i])
             return qs.setRoot(objects[i]) } )
     
     leafSelection = leafSelection.enter()
@@ -69,10 +68,7 @@ function visualize(tree) {
         .style("fill", leafColor)
         .on("mouseover", function() { d3.select(this).style("fill", "blue") })
         .on("mouseleave", function() { d3.select(this).style("fill", leafColor) })
-        .on("click", function(d, i) { 
-            console.log(objects[i])
-            return qs.setRoot(objects[i]) 
-        } )
+        .on("click", function(d, i) { return qs.setRoot(objects[i]) } )
 
     
     leafSelection.append("text")
@@ -104,12 +100,8 @@ function visualize(tree) {
         .attr("y", (d, i) => linePosition(i)[1] / 2)
         .text((d) => { return d[0] } )
         
-
-    console.log(rootLabel)
     const rootSelection = svg.selectAll("g#root")
             .data(rootLabel)
-
-    console.log(rootSelection)
 
     // update root
     let rootNodeCircle = rootSelection.select("g>circle")
@@ -162,7 +154,6 @@ function visualizeTree(treeData) {
         return d.children
     })
     nodes = treemap(nodes)
-    console.log(nodes)
 
     let link = group.selectAll(".link")
             .data(nodes.descendants().slice(1))
