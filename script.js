@@ -82,7 +82,8 @@ function parseResponse(res) {
 
 function visualizeResults(entityLabel, properties, objects, propertyLabels, objectLabels) {
     // See: https://stackoverflow.com/questions/13615381/d3-add-text-to-circle
-    const leaveColor = "rgba(50, 200, 100, 0.7)"
+    const leafColor = "rgba(50, 200, 100, 0.7)"
+    const radius = 480
     
     const svg = d3.select("svg")
         .style("background-color", "rgb(200, 200, 255)")
@@ -94,19 +95,25 @@ function visualizeResults(entityLabel, properties, objects, propertyLabels, obje
     svg.selectAll("g:not(#root)")
         .data([])
         .exit().remove()
-        
-    let leafSelection = svg.selectAll("g:not(#root)").data(objectLabels)
-        
+
+    const labels = []
+    for (let i = 0; i < objectLabels.length; i++)
+    {
+        labels.push([propertyLabels[i], objectLabels[i]])
+    }
+
+    let leafSelection = svg.selectAll("g:not(#root)").data(labels)
+
     leafSelection.attr("transform", (d, i) => 
         { 
             return "translate(" + 
-                arrangeInCircle(i, objectLabels.length, 300, centerX, centerY)[0] + ", " + 
-                arrangeInCircle(i, objectLabels.length, 300, centerX, centerY)[1] + 
+                arrangeInCircle(i, objectLabels.length, radius, centerX, centerY)[0] + ", " + 
+                arrangeInCircle(i, objectLabels.length, radius, centerX, centerY)[1] + 
                 ")" 
         }) 
 
     leafSelection.selectAll("g>text")
-        .text((d) => { return d })
+        .text((d) => { return d[1] })
 
     leafSelection.selectAll("g>circle")
         .on("click", function(d, i) { return selectEntity(i, objects) } )
@@ -116,34 +123,48 @@ function visualizeResults(entityLabel, properties, objects, propertyLabels, obje
             .attr("transform", (d, i) => 
             { 
                 return "translate(" + 
-                arrangeInCircle(i, objectLabels.length, 300, centerX, centerY)[0] + ", " + 
-                arrangeInCircle(i, objectLabels.length, 300, centerX, centerY)[1] + 
+                arrangeInCircle(i, objectLabels.length, radius, centerX, centerY)[0] + ", " + 
+                arrangeInCircle(i, objectLabels.length, radius, centerX, centerY)[1] + 
                 ")" 
             }) 
 
     leafSelection.append("circle")
         .attr("r", 40)
-        .style("fill", leaveColor)
+        .style("fill", leafColor)
         .on("mouseover", function() { d3.select(this).style("fill", "blue") })
-        .on("mouseleave", function() { d3.select(this).style("fill", leaveColor) })
+        .on("mouseleave", function() { d3.select(this).style("fill", leafColor) })
         .on("click", function(d, i) { return selectEntity(i, objects) } )
 
     
     leafSelection.append("text")
-        .text((d) => { return d })
+        .text((d) => { return d[1] })
         .attr("font-family", "Verdana, sans-serif")
         .attr("font-size", "150%")        
         .attr("text-anchor", "middle")
         .style("fill", "black")
 
-    leafSelection
-        .append("line")
-            .style("stroke", "black")
-            .attr("x1", (d, i) => { return -arrangeInCircle(i, objectLabels.length, 300, centerX, centerY)[0] + centerX } )
-            .attr("y1", (d, i) => { return -arrangeInCircle(i, objectLabels.length, 300, centerX, centerY)[1] + centerY } )
-            .attr("x2", 0)
-            .attr("y2", 0)
+    const links = leafSelection.append("g")
+    
+    function linePosition(i) {
+        const leafPos = arrangeInCircle(i, objectLabels.length, radius, centerX, centerY)
+        return [-leafPos[0] + centerX, -leafPos[1] + centerY]
+    }
 
+    links.append("line")
+        .attr("x1", (d, i) => { return linePosition(i)[0] } )
+        .attr("y1", (d, i) => { return linePosition(i)[1] } )
+        .attr("x2", 0)
+        .attr("y2", 0)
+        .style("stroke", "black")
+
+    links.append("text")
+        .attr("font-family", "Verdana, sans-serif")
+        .attr("text-anchor", "middle")
+        .style("fill", "black")
+        .attr("x", (d, i) => linePosition(i)[0] / 2)
+        .attr("y", (d, i) => linePosition(i)[1] / 2)
+        .text((d) => { return d[0] } )
+        
 
     const rootSelection = svg.selectAll("g#root")
         .data(entityLabel)
