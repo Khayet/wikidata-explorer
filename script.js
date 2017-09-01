@@ -115,7 +115,6 @@ function visualizeResults(entityLabel, properties, objects, propertyLabels, obje
         .attr("font-size", "150%")
         .attr("text-anchor", "middle")
         .style("fill", "white")
-    
 
     // update leaves
     svg.selectAll("g:not(#root)")
@@ -132,10 +131,10 @@ function visualizeResults(entityLabel, properties, objects, propertyLabels, obje
                 ")" 
         }) 
 
-    let texts = leaveSelection.selectAll("g>text")
+    leaveSelection.selectAll("g>text")
         .text((d) => { return d })
 
-    let circles = leaveSelection.selectAll("g>circle")
+    leaveSelection.selectAll("g>circle")
         .on("click", function(d, i) { return selectEntity(i, objects) } )
     
     leaveSelection = leaveSelection.enter()
@@ -148,22 +147,19 @@ function visualizeResults(entityLabel, properties, objects, propertyLabels, obje
             ")" 
         }) 
     
-    circles = leaveSelection.append("circle")
+    leaveSelection.append("circle")
         .attr("r", 40)
         .style("fill", leaveColor)
         .on("mouseover", function() { d3.select(this).style("fill", "blue") })
         .on("mouseleave", function() { d3.select(this).style("fill", leaveColor) })
         .on("click", function(d, i) { return selectEntity(i, objects) } )
     
-    texts = leaveSelection.append("text")
+    leaveSelection.append("text")
         .text((d) => { return d })
         .attr("font-family", "Verdana, sans-serif")
         .attr("font-size", "150%")        
         .attr("text-anchor", "middle")
         .style("fill", "black")
-
-    leaveSelection = leaveSelection.exit().
-        remove()
 }
 
 function selectEntity(index, entities) {
