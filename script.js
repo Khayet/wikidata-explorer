@@ -3,7 +3,7 @@
 getWikidata("wd:Q42")
 
 function getWikidata(entity) {
-    console.log("Sending Request")
+    // console.log("Sending Request")
     const query = constructQueryPropsAndObjects(entity, 20) 
 
     document.getElementById("sampleEntity").textContent = entity
@@ -23,7 +23,7 @@ function constructQueryPropsAndObjects(entity, limit = 10) {
     // See: https://stackoverflow.com/questions/25100224/how-to-get-a-list-of-all-wikidata-properties
     // Also: https://query.wikidata.org/ example: data of douglas adams
     const query =
-        "SELECT DISTINCT ?entityLabel ?prop ?propLabel ?object ?objectLabel " +
+        "SELECT ?entityLabel ?prop ?propLabel ?object ?objectLabel " +
         "WHERE  { " +
         entity + " ?propUrl ?object . " + // get all propertyUrls and objects of entity
         "?prop ?ref ?propUrl . " + // get property referred to by url
@@ -36,7 +36,7 @@ function constructQueryPropsAndObjects(entity, limit = 10) {
         "FILTER (?propUrl != wdt:P1963) . " + // specifically exclude "properties for this type"-property
         "} " +
         "LIMIT " + limit
-    console.log(query)
+    // console.log(query)
     return query
 } 
 
@@ -55,7 +55,7 @@ function constructQueryInstancesOf(entity, limit = 10) {
 }
 
 function parseResponse(res) {
-    console.log("Parsing response..")
+    // console.log("Parsing response..")
     const response = JSON.parse(res)
     const properties = [], objects = []
     const propertyLabels = [], objectLabels = []
@@ -83,8 +83,6 @@ function parseResponse(res) {
 function visualizeResults(entityLabel, properties, objects, propertyLabels, objectLabels) {
     // See: https://stackoverflow.com/questions/13615381/d3-add-text-to-circle
     const leaveColor = "rgba(50, 200, 100, 0.7)"
-    const num_nodes = objectLabels.length
-    console.log(num_nodes)
     
     const svg = d3.select("svg")
     .style("background-color", "rgb(200, 200, 255)")
@@ -120,9 +118,13 @@ function visualizeResults(entityLabel, properties, objects, propertyLabels, obje
     
 
     // update leaves
-    let leaveSelection = svg.selectAll("g:not(#root)")
-        .data(objectLabels)
-        .attr("transform", (d, i) => 
+    svg.selectAll("g:not(#root)")
+        .data([])
+        .exit().remove()
+        
+    let leaveSelection = svg.selectAll("g:not(#root)").data(objectLabels)
+        
+    leaveSelection.attr("transform", (d, i) => 
         { 
             return "translate(" + 
                 arrangeInCircle(i, objectLabels.length, 300, centerX, centerY)[0] + ", " + 
@@ -130,43 +132,43 @@ function visualizeResults(entityLabel, properties, objects, propertyLabels, obje
                 ")" 
         }) 
 
-    let circles = leaveSelection.selectAll("g>circle")
-    // . ...update leav node circles
-
     let texts = leaveSelection.selectAll("g>text")
         .text((d) => { return d })
 
-    const newLeaveNodes = leaveSelection.enter()
+    let circles = leaveSelection.selectAll("g>circle")
+        .on("click", function(d, i) { return selectEntity(i, objects) } )
+    
+    leaveSelection = leaveSelection.enter()
         .append("g")
         .attr("transform", (d, i) => 
-            { 
-                return "translate(" + 
-                    arrangeInCircle(i, objectLabels.length, 300, centerX, centerY)[0] + ", " + 
-                    arrangeInCircle(i, objectLabels.length, 300, centerX, centerY)[1] + 
-                    ")" 
-            }) 
-        
-    circles = newLeaveNodes.append("circle")
+        { 
+            return "translate(" + 
+            arrangeInCircle(i, objectLabels.length, 300, centerX, centerY)[0] + ", " + 
+            arrangeInCircle(i, objectLabels.length, 300, centerX, centerY)[1] + 
+            ")" 
+        }) 
+    
+    circles = leaveSelection.append("circle")
         .attr("r", 40)
         .style("fill", leaveColor)
-        .on("mouseover", function(d) { d3.select(this).style("fill", "blue") })
+        .on("mouseover", function() { d3.select(this).style("fill", "blue") })
         .on("mouseleave", function() { d3.select(this).style("fill", leaveColor) })
         .on("click", function(d, i) { return selectEntity(i, objects) } )
-
-    texts = newLeaveNodes.append("text")
+    
+    texts = leaveSelection.append("text")
         .text((d) => { return d })
         .attr("font-family", "Verdana, sans-serif")
         .attr("font-size", "150%")        
         .attr("text-anchor", "middle")
         .style("fill", "black")
 
-    leaveSelection.exit()
-        .remove()
+    leaveSelection = leaveSelection.exit().
+        remove()
 }
 
 function selectEntity(index, entities) {
     // send new query
-    console.log("select entity " + index + " " + entities[index])
+    // console.log("select entity " + index + " " + entities[index])
     getWikidata(entities[index], 20)
 }
 
