@@ -5,10 +5,20 @@ const qs = queryService
 qs.setCallback(visualize)
 qs.setRoot(selectedEntity)
 
-
-// TODO: receive a tree object instead and parse that
-function visualize(entityLabel, properties, objects, propertyLabels, objectLabels) {
+// TODO: clean this code
+function visualize(tree) {
     // See: https://stackoverflow.com/questions/13615381/d3-add-text-to-circle
+
+    const rootLabel = [tree["root"]]
+
+    const labels = [], objects = []
+    for (let i = 0; i < tree["children"].length; i++)
+    {
+        labels.push([tree["children"][i]["prop"], tree["children"][i]["objLabel"]])
+        objects.push(tree["children"][i]["obj"])
+    }
+
+
     const leafColor = "rgba(50, 200, 100, 0.7)"
     const radius = 480
     
@@ -23,19 +33,14 @@ function visualize(entityLabel, properties, objects, propertyLabels, objectLabel
         .data([])
         .exit().remove()
 
-    const labels = []
-    for (let i = 0; i < objectLabels.length; i++)
-    {
-        labels.push([propertyLabels[i], objectLabels[i]])
-    }
 
     let leafSelection = svg.selectAll("g:not(#root)").data(labels)
 
     leafSelection.attr("transform", (d, i) => 
         { 
             return "translate(" + 
-                arrangeInCircle(i, objectLabels.length, radius, centerX, centerY)[0] + ", " + 
-                arrangeInCircle(i, objectLabels.length, radius, centerX, centerY)[1] + 
+                arrangeInCircle(i, tree["children"].length, radius, centerX, centerY)[0] + ", " + 
+                arrangeInCircle(i, tree["children"].length, radius, centerX, centerY)[1] + 
                 ")" 
         }) 
 
@@ -43,15 +48,17 @@ function visualize(entityLabel, properties, objects, propertyLabels, objectLabel
         .text((d) => { return d[1] })
 
     leafSelection.selectAll("g>circle")
-        .on("click", function(d, i) { return selectEntity(i, objects) } )
+        .on("click", function(d, i) { 
+            console.log(objects[i])
+            return qs.setRoot(objects[i]) } )
     
     leafSelection = leafSelection.enter()
         .append("g")
             .attr("transform", (d, i) => 
             { 
                 return "translate(" + 
-                arrangeInCircle(i, objectLabels.length, radius, centerX, centerY)[0] + ", " + 
-                arrangeInCircle(i, objectLabels.length, radius, centerX, centerY)[1] + 
+                arrangeInCircle(i, tree["children"].length, radius, centerX, centerY)[0] + ", " + 
+                arrangeInCircle(i, tree["children"].length, radius, centerX, centerY)[1] + 
                 ")" 
             }) 
 
@@ -60,7 +67,10 @@ function visualize(entityLabel, properties, objects, propertyLabels, objectLabel
         .style("fill", leafColor)
         .on("mouseover", function() { d3.select(this).style("fill", "blue") })
         .on("mouseleave", function() { d3.select(this).style("fill", leafColor) })
-        .on("click", function(d, i) { return selectEntity(i, objects) } )
+        .on("click", function(d, i) { 
+            console.log(objects[i])
+            return qs.setRoot(objects[i]) 
+        } )
 
     
     leafSelection.append("text")
@@ -73,7 +83,7 @@ function visualize(entityLabel, properties, objects, propertyLabels, objectLabel
     const links = leafSelection.append("g")
     
     function linePosition(i) {
-        const leafPos = arrangeInCircle(i, objectLabels.length, radius, centerX, centerY)
+        const leafPos = arrangeInCircle(i, tree["children"].length, radius, centerX, centerY)
         return [-leafPos[0] + centerX, -leafPos[1] + centerY]
     }
 
@@ -93,8 +103,11 @@ function visualize(entityLabel, properties, objects, propertyLabels, objectLabel
         .text((d) => { return d[0] } )
         
 
+    console.log(rootLabel)
     const rootSelection = svg.selectAll("g#root")
-        .data(entityLabel)
+            .data(rootLabel)
+
+    console.log(rootSelection)
 
     // update root
     let rootNodeCircle = rootSelection.select("g>circle")
@@ -118,12 +131,6 @@ function visualize(entityLabel, properties, objects, propertyLabels, objectLabel
         .attr("font-size", "150%")
         .attr("text-anchor", "middle")
         .style("fill", "white")
-}
-
-function selectEntity(index, entities) {
-    // send new query
-    // console.log("select entity " + index + " " + entities[index])
-    qs.setRoot(entities[index])
 }
 
 function arrangeInCircle(index, num, radius, cx=0.0, cy=0.0) {
