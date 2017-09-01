@@ -2,19 +2,20 @@
 
 let selectedEntity = "wd:Q42"
 const qs = queryService
-qs.setCallback(visualize)
+qs.setCallback(visualizeTree)
 qs.setRoot(selectedEntity)
 
 // TODO: clean this code
 function visualize(tree) {
     // See: https://stackoverflow.com/questions/13615381/d3-add-text-to-circle
 
+
     const rootLabel = [tree["root"]]
 
     const labels = [], objects = []
     for (let i = 0; i < tree["children"].length; i++)
     {
-        labels.push([tree["children"][i]["prop"], tree["children"][i]["objLabel"]])
+        labels.push([tree["children"][i]["prop"], tree["children"][i]["name"]])
         objects.push(tree["children"][i]["obj"])
     }
 
@@ -24,6 +25,7 @@ function visualize(tree) {
     
     const svg = d3.select("svg")
         .style("background-color", "rgb(200, 200, 255)")
+
 
     const centerX = svg.attr("width") / 2
     const centerY = svg.attr("height") / 2
@@ -140,4 +142,49 @@ function arrangeInCircle(index, num, radius, cx=0.0, cy=0.0) {
     y = radius * Math.sin(index * (2*Math.PI / num)) + cy
 
     return [x, y]
+}
+
+
+function visualizeTree(treeData) {
+    // inspired by the tree diagram example from: https://leanpub.com/d3-t-and-t-v4/read
+
+    const svg = d3.selectAll("svg")
+
+    const group = svg.append("g")
+        .attr("transform", "translate(" + 40 + "," + 40 + ")")
+
+    let root = treeData["name"]
+
+    let treemap = d3.tree(root)
+        .size([600, 400])
+        
+    let nodes = d3.hierarchy(treeData, function(d) {
+        return d.children
+    })
+    nodes = treemap(nodes)
+    console.log(nodes)
+
+    let link = group.selectAll(".link")
+            .data(nodes.descendants().slice(1))
+        .enter().append("path")
+            .attr("class", "link")
+            .attr("d", function(d) {
+                return "M" + d.x + "," + d.y
+                + "L" + d.parent.x + "," + d.parent.y;
+              })
+
+    let node = group.selectAll("g>circle")
+            .data(nodes.descendants())
+        .enter().append("g")
+            .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")" })
+
+    node.append("circle")
+        .attr("r", 10)
+
+    node.append("text")
+        .attr("dy", ".35em")
+        .attr("y", function(d) { return 0})
+        .style("text-anchor", "middle")
+        .text(function(d) { return d.data.name; });
+
 }

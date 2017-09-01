@@ -1,3 +1,9 @@
 p {
     white-space: pre;
 }
+
+.link {
+    fill: none;
+    stroke: black;
+    stroke-width: 2px;
+}

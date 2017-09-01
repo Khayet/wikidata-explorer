@@ -2,9 +2,13 @@
 
 var queryService = (function () {
 
+let my = {}
+
 let callback = null
 let root = ""
-let my = {}
+
+const queryLimit = 30
+
 
 my.setCallback = function(newCallback) { callback = newCallback }
 
@@ -18,7 +22,7 @@ my.setRoot = function(newRoot) {
 }
 
 function getWikidata() {
-    const query = constructQueryPropsAndObjects(20) 
+    const query = constructQueryPropsAndObjects(queryLimit) 
 
     document.getElementById("sampleEntity").textContent = root
     
@@ -50,7 +54,7 @@ function constructQueryPropsAndObjects(limit = 10) {
     "} " +
     "LIMIT " + limit
 
-    console.log(query)
+    // console.log(query)
     return query
 } 
 
@@ -64,7 +68,7 @@ function parseResponse(res) {
 
     const tree = {}
 
-    tree["root"] = results[0].entityLabel.value
+    tree["name"] = results[0].entityLabel.value
     tree["children"] = []
     
     for (let i = 0; i < results.length; i++) 
@@ -73,7 +77,7 @@ function parseResponse(res) {
 
         tree["children"].push( {"prop": results[i].propLabel.value,
                                 "obj": "wd:" + objUrlParts[objUrlParts.length -1],
-                                "objLabel": results[i].objectLabel.value,
+                                "name": results[i].objectLabel.value,
                                 "children": []} )
     }
 
