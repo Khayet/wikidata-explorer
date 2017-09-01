@@ -2,12 +2,12 @@
 
 let selectedEntity = "wd:Q42"
 const qs = queryService
-qs.setCallback(visualizeResults)
+qs.setCallback(visualize)
 qs.setRoot(selectedEntity)
 
 
 // TODO: receive a tree object instead and parse that
-function visualizeResults(entityLabel, properties, objects, propertyLabels, objectLabels) {
+function visualize(entityLabel, properties, objects, propertyLabels, objectLabels) {
     // See: https://stackoverflow.com/questions/13615381/d3-add-text-to-circle
     const leafColor = "rgba(50, 200, 100, 0.7)"
     const radius = 480
@@ -123,7 +123,7 @@ function visualizeResults(entityLabel, properties, objects, propertyLabels, obje
 function selectEntity(index, entities) {
     // send new query
     // console.log("select entity " + index + " " + entities[index])
-    getWikidata(entities[index], 20)
+    qs.setRoot(entities[index])
 }
 
 function arrangeInCircle(index, num, radius, cx=0.0, cy=0.0) {
