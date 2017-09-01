@@ -85,36 +85,10 @@ function visualizeResults(entityLabel, properties, objects, propertyLabels, obje
     const leaveColor = "rgba(50, 200, 100, 0.7)"
     
     const svg = d3.select("svg")
-    .style("background-color", "rgb(200, 200, 255)")
+        .style("background-color", "rgb(200, 200, 255)")
 
     const centerX = svg.attr("width") / 2
     const centerY = svg.attr("height") / 2
-
-    const rootSelection = svg.selectAll("g#root")
-        .data(entityLabel)
-
-    // update root
-    let rootNodeCircle = rootSelection.select("g>circle")
-        // . ...update root node circle
-    
-    let rootNodeText = rootSelection.select("g>text")
-        .text((d) => { return d })
-
-    const rootNode = rootSelection.enter()
-        .append("g")
-        .attr("transform", "translate(" + centerX + ", " + centerY + ")")
-        .attr("id", "root")
-    
-    rootNodeCircle = rootNode.append("circle")
-        .attr("r", 30)
-        .style("fill", "rgb(255, 30, 30)")
-    
-    rootNodeText = rootNode.append("text")
-        .text((d) => { return d })
-        .attr("font-family", "Verdana, sans-serif")
-        .attr("font-size", "150%")
-        .attr("text-anchor", "middle")
-        .style("fill", "white")
 
     // update leaves
     svg.selectAll("g:not(#root)")
@@ -139,20 +113,21 @@ function visualizeResults(entityLabel, properties, objects, propertyLabels, obje
     
     leafSelection = leafSelection.enter()
         .append("g")
-        .attr("transform", (d, i) => 
-        { 
-            return "translate(" + 
-            arrangeInCircle(i, objectLabels.length, 300, centerX, centerY)[0] + ", " + 
-            arrangeInCircle(i, objectLabels.length, 300, centerX, centerY)[1] + 
-            ")" 
-        }) 
-    
+            .attr("transform", (d, i) => 
+            { 
+                return "translate(" + 
+                arrangeInCircle(i, objectLabels.length, 300, centerX, centerY)[0] + ", " + 
+                arrangeInCircle(i, objectLabels.length, 300, centerX, centerY)[1] + 
+                ")" 
+            }) 
+
     leafSelection.append("circle")
         .attr("r", 40)
         .style("fill", leaveColor)
         .on("mouseover", function() { d3.select(this).style("fill", "blue") })
         .on("mouseleave", function() { d3.select(this).style("fill", leaveColor) })
         .on("click", function(d, i) { return selectEntity(i, objects) } )
+
     
     leafSelection.append("text")
         .text((d) => { return d })
@@ -160,6 +135,41 @@ function visualizeResults(entityLabel, properties, objects, propertyLabels, obje
         .attr("font-size", "150%")        
         .attr("text-anchor", "middle")
         .style("fill", "black")
+
+    leafSelection
+        .append("line")
+            .style("stroke", "black")
+            .attr("x1", (d, i) => { return -arrangeInCircle(i, objectLabels.length, 300, centerX, centerY)[0] + centerX } )
+            .attr("y1", (d, i) => { return -arrangeInCircle(i, objectLabels.length, 300, centerX, centerY)[1] + centerY } )
+            .attr("x2", 0)
+            .attr("y2", 0)
+
+
+    const rootSelection = svg.selectAll("g#root")
+        .data(entityLabel)
+
+    // update root
+    let rootNodeCircle = rootSelection.select("g>circle")
+        // . ...update root node circle
+
+    let rootNodeText = rootSelection.select("g>text")
+        .text((d) => { return d })
+
+    const rootNode = rootSelection.enter()
+        .append("g")
+        .attr("transform", "translate(" + centerX + ", " + centerY + ")")
+        .attr("id", "root")
+
+    rootNodeCircle = rootNode.append("circle")
+        .attr("r", 30)
+        .style("fill", "rgb(255, 30, 30)")
+
+    rootNodeText = rootNode.append("text")
+        .text((d) => { return d })
+        .attr("font-family", "Verdana, sans-serif")
+        .attr("font-size", "150%")
+        .attr("text-anchor", "middle")
+        .style("fill", "white")
 }
 
 function selectEntity(index, entities) {
