@@ -121,9 +121,9 @@ function visualizeResults(entityLabel, properties, objects, propertyLabels, obje
         .data([])
         .exit().remove()
         
-    let leaveSelection = svg.selectAll("g:not(#root)").data(objectLabels)
+    let leafSelection = svg.selectAll("g:not(#root)").data(objectLabels)
         
-    leaveSelection.attr("transform", (d, i) => 
+    leafSelection.attr("transform", (d, i) => 
         { 
             return "translate(" + 
                 arrangeInCircle(i, objectLabels.length, 300, centerX, centerY)[0] + ", " + 
@@ -131,13 +131,13 @@ function visualizeResults(entityLabel, properties, objects, propertyLabels, obje
                 ")" 
         }) 
 
-    leaveSelection.selectAll("g>text")
+    leafSelection.selectAll("g>text")
         .text((d) => { return d })
 
-    leaveSelection.selectAll("g>circle")
+    leafSelection.selectAll("g>circle")
         .on("click", function(d, i) { return selectEntity(i, objects) } )
     
-    leaveSelection = leaveSelection.enter()
+    leafSelection = leafSelection.enter()
         .append("g")
         .attr("transform", (d, i) => 
         { 
@@ -147,14 +147,14 @@ function visualizeResults(entityLabel, properties, objects, propertyLabels, obje
             ")" 
         }) 
     
-    leaveSelection.append("circle")
+    leafSelection.append("circle")
         .attr("r", 40)
         .style("fill", leaveColor)
         .on("mouseover", function() { d3.select(this).style("fill", "blue") })
         .on("mouseleave", function() { d3.select(this).style("fill", leaveColor) })
         .on("click", function(d, i) { return selectEntity(i, objects) } )
     
-    leaveSelection.append("text")
+    leafSelection.append("text")
         .text((d) => { return d })
         .attr("font-family", "Verdana, sans-serif")
         .attr("font-size", "150%")        
