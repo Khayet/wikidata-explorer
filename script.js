@@ -127,6 +127,10 @@ function visualizeTree(treeData) {
     const center = [svg.attr("width") / 2, svg.attr("height") / 2]
     const leafColor = "rgba(50, 200, 100, 0.7)"
     
+    svg.selectAll("g")
+        .data([])
+        .exit().remove()
+
     const group = svg.append("g")
         .attr("transform", "translate(" + center[0] + "," + center[1] + ")")
 
