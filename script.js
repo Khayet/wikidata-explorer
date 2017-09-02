@@ -2,7 +2,7 @@
 
 let selectedEntity = "wd:Q42"
 const qs = queryService
-qs.setCallback(visualize)
+qs.setCallback(visualizeTree)
 qs.setRoot(selectedEntity)
 
 // TODO: clean this code
@@ -144,8 +144,6 @@ function visualizeTree(treeData) {
     let i = 0
     // BUG: this function breaks on large tree
     let nodes = d3.hierarchy(treeData, function(d) {
-        console.log(d)
-        console.log(d.children)
         i++
         if (i >= max) {
             throw new Error();
