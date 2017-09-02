@@ -24,8 +24,6 @@ function visualize(tree) {
     const radius = 480
     
     const svg = d3.select("svg")
-        .style("background-color", "rgb(200, 200, 255)")
-
 
     const centerX = svg.attr("width") / 2
     const centerY = svg.attr("height") / 2
@@ -64,19 +62,15 @@ function visualize(tree) {
             }) 
 
     leafSelection.append("circle")
-        .attr("r", 40)
-        .style("fill", leafColor)
+        .attr("class", "leaf")
         .on("mouseover", function() { d3.select(this).style("fill", "blue") })
         .on("mouseleave", function() { d3.select(this).style("fill", leafColor) })
         .on("click", function(d, i) { return qs.setRoot(objects[i]) } )
-
     
     leafSelection.append("text")
-        .text((d) => { return d[1] })
-        .attr("font-family", "Verdana, sans-serif")
-        .attr("font-size", "150%")        
-        .attr("text-anchor", "middle")
-        .style("fill", "black")
+            .attr("class", "leafText")
+            .text((d) => { return d[1] })
+
 
     const links = leafSelection.append("g")
     
@@ -86,22 +80,20 @@ function visualize(tree) {
     }
 
     links.append("line")
+        .attr("class", "link")
         .attr("x1", (d, i) => { return linePosition(i)[0] } )
         .attr("y1", (d, i) => { return linePosition(i)[1] } )
         .attr("x2", 0)
         .attr("y2", 0)
-        .style("stroke", "black")
 
     links.append("text")
-        .attr("font-family", "Verdana, sans-serif")
-        .attr("text-anchor", "middle")
-        .style("fill", "black")
+        .attr("class", "linkText")
         .attr("x", (d, i) => linePosition(i)[0] / 2)
         .attr("y", (d, i) => linePosition(i)[1] / 2)
         .text((d) => { return d[0] } )
         
     const rootSelection = svg.selectAll("g#root")
-            .data(rootLabel)
+        .data(rootLabel)
 
     // update root
     let rootNodeCircle = rootSelection.select("g>circle")
@@ -116,15 +108,10 @@ function visualize(tree) {
         .attr("id", "root")
 
     rootNodeCircle = rootNode.append("circle")
-        .attr("r", 30)
-        .style("fill", "rgb(255, 30, 30)")
 
     rootNodeText = rootNode.append("text")
         .text((d) => { return d })
-        .attr("font-family", "Verdana, sans-serif")
-        .attr("font-size", "150%")
-        .attr("text-anchor", "middle")
-        .style("fill", "white")
+
 }
 
 function arrangeInCircle(index, num, radius, cx=0.0, cy=0.0) {

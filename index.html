@@ -1,9 +1,54 @@
 <!doctype html>
 <html>
     <head>
-        <link rel="stylesheet" href="index.css">
+        <!-- <link rel="stylesheet" href="index.css"> -->
         <title>Wikidata radial node-link diagram.</title>
+        <style>
+
+            svg {
+                background-color: rgb(200, 200, 255);
+            } 
+
+            .link {
+                fill: none;
+                stroke: black;
+                stroke-width: 2px;
+            }
+
+            .leaf {
+                r: 40;
+                fill: rgba(50, 200, 100, 0.7);
+            }
+
+            .leafText {
+                font-family: "Verdana, sans-serif";
+                font-size: 150%;
+                text-anchor: middle;
+                fill: black;
+            }
+
+            .linkText {
+                font-family: "Verdana, sans-serif";
+                font-size: 120%;
+                text-anchor: middle;
+                fill: black;
+            }
+
+            #root circle {
+                r: 30;
+                fill: rgb(255, 30, 30);
+            }
+
+            #root text {
+                font-family: "Verdana, sans-serif";
+                font-size: 150%;
+                text-anchor: middle;
+                fill: white;
+            }
+
+        </style>
     </head>
+
     <body>
         <script src="https://d3js.org/d3.v4.js"></script>
         <h4>All properties and related entities of sample entity:</h4>
