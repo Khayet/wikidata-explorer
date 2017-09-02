@@ -155,7 +155,7 @@ function executeQueue() {
     {
         console.log("done!")
         console.log(currentTree)
-        // callback(currentTree)
+        callback(currentTree)
     }
 }
 
