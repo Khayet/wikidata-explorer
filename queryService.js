@@ -10,11 +10,9 @@ let root = ""
 // TODO: do something about the naming here
 let currentTree = {}
 let currentTreeDepth = 0
-let remainingNodes = []
 let functionQueue = []
 
 const queryLimit = 3
-
 
 my.setCallback = function(newCallback) { callback = newCallback }
 
@@ -38,7 +36,6 @@ function getWikidata(entity=root) {
     document.getElementById("sampleEntity").textContent = root
     
     const httpRequest = new XMLHttpRequest()
-    httpRequest.addEventListener("load", console.log(httpRequest.responseText))
     httpRequest.addEventListener("load", () => { parseResponse(httpRequest.responseText) })
     httpRequest.open(
         "GET", 
@@ -79,9 +76,6 @@ function parseResponse(res) {
 
     tree["name"] = results[0].entityLabel.value
     tree["children"] = []
-    tree["prop"] = null
-    tree["obj"] = null
-    
     for (let i = 0; i < results.length; i++) 
     {
         const objUrlParts = results[i].object.value.split("/")
@@ -109,18 +103,15 @@ function constructTree() {
 function addSubtree(subtree) {
     if (currentTreeDepth === 0)
     {
-        console.log("currentTreeDepth === 0")
         currentTree = subtree
         currentTreeDepth++
     }
 
-    console.log(currentTree)
     const children = currentTree["children"]
     for (let i = 0; i < children.length; i++)
     { // find matching node
         if (children[i]["name"] === subtree["name"]) 
         {
-            console.log("appending subtree")
             children[i]["children"] = Array.prototype.concat(children[i], subtree["children"])
         }
     }
@@ -130,12 +121,10 @@ function addSubtree(subtree) {
 function completeTree() {
     // find remaining nodes:
     const children = currentTree["children"]
-    console.log(children)
     for (let i = 0; i < children.length; i++)
     {
         if (children[i]["children"].length === 0)
         {
-            console.log("add to remainingNodes: " + children[i]["obj"])
             functionQueue.push([getWikidata, children[i]["obj"]])
         }
     }
@@ -144,16 +133,14 @@ function completeTree() {
 
 
 function executeQueue() {
-    console.log(functionQueue.length)
     if (functionQueue.length > 0)
     {
         var tuple = functionQueue.shift();
-        console.log(tuple);
         (tuple[0])(tuple[1])
     }
     else
     {
-        console.log("done!")
+        console.log("queryService is done!")
         console.log(currentTree)
         callback(currentTree)
     }

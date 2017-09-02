@@ -1,6 +1,7 @@
 # TODO:
 
-- make visualizeTree handle trees with depth > 1
+- !BUG: queryService returns recursive trees
+- add loading indicator when loading
 - add tree depth > 2
 - construct tree server-side, serve visible subtree
 - constantly query and construct tree

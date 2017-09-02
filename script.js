@@ -45,6 +45,7 @@ function visualize(tree) {
         }) 
 
     leafSelection.selectAll("g>text")
+        .attr("dy", ".25em")
         .text((d) => { return d[1] })
 
     leafSelection.selectAll("g>circle")
@@ -68,8 +69,9 @@ function visualize(tree) {
         .on("click", function(d, i) { return qs.setRoot(objects[i]) } )
     
     leafSelection.append("text")
-            .attr("class", "leafText")
-            .text((d) => { return d[1] })
+        .attr("class", "leafText")
+        .attr("dy", ".25em")
+        .text((d) => { return d[1] })
 
 
     const links = leafSelection.append("g")
@@ -110,6 +112,7 @@ function visualize(tree) {
     rootNodeCircle = rootNode.append("circle")
 
     rootNodeText = rootNode.append("text")
+        .attr("dy", ".25em")
         .text((d) => { return d })
 
 }
@@ -137,8 +140,16 @@ function visualizeTree(treeData) {
     let treemap = d3.tree(root)
         .size([600, 400])
     
+    let max = 50
+    let i = 0
     // BUG: this function breaks on large tree
     let nodes = d3.hierarchy(treeData, function(d) {
+        console.log(d)
+        console.log(d.children)
+        i++
+        if (i >= max) {
+            throw new Error();
+        }
         return d.children
     })
 
