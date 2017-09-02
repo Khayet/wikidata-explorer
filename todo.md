@@ -1,6 +1,6 @@
 # TODO:
 
-- !BUG: queryService returns recursive trees
+- combine visualize(tree) and visualizeTree(treeData) into visualize(treeData)
 - add loading indicator when loading
 - add tree depth > 2
 - construct tree server-side, serve visible subtree

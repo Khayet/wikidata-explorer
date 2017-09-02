@@ -140,14 +140,7 @@ function visualizeTree(treeData) {
     let treemap = d3.tree(root)
         .size([600, 400])
     
-    let max = 50
-    let i = 0
-    // BUG: this function breaks on large tree
     let nodes = d3.hierarchy(treeData, function(d) {
-        i++
-        if (i >= max) {
-            throw new Error();
-        }
         return d.children
     })
 

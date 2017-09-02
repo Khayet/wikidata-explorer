@@ -106,31 +106,16 @@ function addSubtree(subtree) {
         currentTreeDepth++
     }
     else {
-        console.log(currentTree["children"])
-        for (let i = 0; i < currentTree["children"].length; i++)
+        let children = currentTree["children"]
+        for (let i = 0; i < children.length; i++)
         {
-            console.log(currentTree["children"][i]["name"] + " === " + subtree["name"] + " ?")
-            console.log(currentTree["children"][i]["children"] + " " + (currentTree["children"][i]["children"].length === 0))
-            if (currentTree["children"][i]["children"].length === 0 &&
-                currentTree["children"][i]["name"] === subtree["name"])
+            if (children[i]["children"].length === 0 &&
+                children[i]["name"] === subtree["name"])
             {
-                console.log("found match on second level! Appending subtree.")
-                currentTree["children"][i]["children"] = Array.prototype.concat(currentTree["children"][i]["children"], subtree["children"]);
+                children[i]["children"] = Array.prototype.concat(currentTree["children"][i]["children"], subtree["children"]);
             }
         }
     }
-    // else if (currentTreeDepth === 1) {
-    //     const children = currentTree["children"]
-
-    //     for (let i = 0; i < currentTree["children"].length; i++)
-    //     { // find matching node
-    //         if (children[i]["name"] === subtree["name"]) 
-    //         {
-    //             console.log("found match! Appending subtree.")
-    //             children[i]["children"] = Array.prototype.concat(children[i], subtree["children"])
-    //         }
-    //     }
-    // }
 }
 
 
