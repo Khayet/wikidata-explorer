@@ -10,6 +10,8 @@ let root = ""
 // TODO: do something about the naming here
 let currentTree = {}
 let currentTreeDepth = 0
+let remainingNodes = []
+let functionQueue = []
 
 const queryLimit = 3
 
@@ -26,7 +28,8 @@ my.setRoot = function(newRoot) {
     currentTreeDepth = 0
 
     root = newRoot 
-    getWikidata()
+    functionQueue.push([constructTree, undefined])
+    executeQueue()
 }
 
 function getWikidata(entity=root) {
@@ -36,7 +39,7 @@ function getWikidata(entity=root) {
     
     const httpRequest = new XMLHttpRequest()
     httpRequest.addEventListener("load", console.log(httpRequest.responseText))
-    httpRequest.addEventListener("load", () => { return parseResponse(httpRequest.responseText) })
+    httpRequest.addEventListener("load", () => { parseResponse(httpRequest.responseText) })
     httpRequest.open(
         "GET", 
         "https://query.wikidata.org/sparql?query=" + query + "&format=json", true)
@@ -90,32 +93,71 @@ function parseResponse(res) {
                                 } )
     }
 
-    constructTree(tree)
+    addSubtree(tree)
+    executeQueue()
 }
 
-function constructTree(subtree) {
+function constructTree() {
     if (currentTreeDepth === 0)
     {
+        functionQueue.push([getWikidata, undefined])
+        functionQueue.push([completeTree, undefined])
+    }
+    executeQueue()
+}
+
+function addSubtree(subtree) {
+    if (currentTreeDepth === 0)
+    {
+        console.log("currentTreeDepth === 0")
         currentTree = subtree
         currentTreeDepth++
     }
 
-    for (let i = 0; i < currentTree["children"].length; i++)
-    {
-        if (currentTree["children"] === []) 
+    console.log(currentTree)
+    const children = currentTree["children"]
+    for (let i = 0; i < children.length; i++)
+    { // find matching node
+        if (children[i]["name"] === subtree["name"]) 
         {
-            getWikidata(currentTree["children"][0]["obj"])
-        }
-        else if (currentTree["children"][i]["name"] === subtree["name"]) 
-        {
-            currentTree["children"][i]["children"] = Array.prototype.concat(currentTree["children"][i], subtree["children"])
+            console.log("appending subtree")
+            children[i]["children"] = Array.prototype.concat(children[i], subtree["children"])
         }
     }
-
-    console.log(currentTree)
-    callback(currentTree)
 }
 
+
+function completeTree() {
+    // find remaining nodes:
+    const children = currentTree["children"]
+    console.log(children)
+    for (let i = 0; i < children.length; i++)
+    {
+        if (children[i]["children"].length === 0)
+        {
+            console.log("add to remainingNodes: " + children[i]["obj"])
+            functionQueue.push([getWikidata, children[i]["obj"]])
+        }
+    }
+    executeQueue()
+}
+
+
+function executeQueue() {
+    console.log(functionQueue.length)
+    if (functionQueue.length > 0)
+    {
+        var tuple = functionQueue.shift();
+        console.log(tuple);
+        (tuple[0])(tuple[1])
+    }
+    else
+    {
+        console.log("done!")
+        console.log(currentTree)
+        // callback(currentTree)
+    }
+}
 
 return my
 }())
