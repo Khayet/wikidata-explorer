@@ -63,7 +63,7 @@ function visualize(tree) {
             }) 
 
     leafSelection.append("circle")
-        .attr("class", "leaf")
+        .attr("class", "leafCircle")
         .on("mouseover", function() { d3.select(this).style("fill", "blue") })
         .on("mouseleave", function() { d3.select(this).style("fill", leafColor) })
         .on("click", function(d, i) { return qs.setRoot(objects[i]) } )
@@ -117,28 +117,23 @@ function visualize(tree) {
 
 }
 
-function arrangeInCircle(index, num, radius, cx=0.0, cy=0.0) {
-    let x = 0.0, y = 0.0
-
-    x = radius * Math.cos(index * (2*Math.PI / num)) + cx
-    y = radius * Math.sin(index * (2*Math.PI / num)) + cy
-
-    return [x, y]
-}
-
-
 function visualizeTree(treeData) {
     // inspired by the tree diagram example from: https://leanpub.com/d3-t-and-t-v4/read
 
+    console.log(treeData)
+
+    const radii = [200, 480]
     const svg = d3.selectAll("svg")
-
+    const center = [svg.attr("width") / 2, svg.attr("height") / 2]
+    const leafColor = "rgba(50, 200, 100, 0.7)"
+    
     const group = svg.append("g")
-        .attr("transform", "translate(" + 40 + "," + 40 + ")")
+        .attr("transform", "translate(" + center[0] + "," + center[1] + ")")
 
-    let root = treeData["name"]
+    let rootName = treeData["name"]
 
-    let treemap = d3.tree(root)
-        .size([600, 400])
+    let treemap = d3.tree(rootName)
+        .size([svg.attr("width"), svg.attr("height")])
     
     let nodes = d3.hierarchy(treeData, function(d) {
         return d.children
@@ -146,27 +141,70 @@ function visualizeTree(treeData) {
 
     nodes = treemap(nodes)
 
+    let node = group.selectAll("g")
+            .data(nodes.descendants())
+        .enter().append("g")
+            .attr("transform", function(d, i) { 
+                return i === 0 ? 
+                    "translate(" + 0 + "," + 0 + ")" :
+                    "translate(" + arrangeInCircle(d.x, d.y)[0] + "," + arrangeInCircle(d.x, d.y)[1] + ")" 
+            })
+
     let link = group.selectAll(".link")
             .data(nodes.descendants().slice(1))
         .enter().append("path")
             .attr("class", "link")
-            .attr("d", function(d) {
-                return "M" + d.x + "," + d.y
-                + "L" + d.parent.x + "," + d.parent.y;
-              })
+            .attr("d", function(d, i) {
 
-    let node = group.selectAll("g>circle")
-            .data(nodes.descendants())
-        .enter().append("g")
-            .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")" })
+                let myX = arrangeInCircle(d.x, d.y)[0]
+                let myY = arrangeInCircle(d.x, d.y)[1]
+
+                let pX = arrangeInCircle(d.parent.x, d.parent.y)[0]
+                let pY = arrangeInCircle(d.parent.x, d.parent.y)[1]
+
+                // return "M" + myX + "," + myY
+                // + "L" + pX + "," + pY;
+
+                return "M" + myX + "," + myY
+                + "C" + myX + "," + myY
+                + " " + pX + "," +  myY
+                + " " + pX + "," + pY;
+            })
 
     node.append("circle")
-        .attr("r", 10)
-
+        .attr("class", (d, i) => { return i === 0  ? "rootCircle" : "leafCircle" })
+        .on("mouseover", function() { d3.select(this).style("fill", "blue") })
+        .on("mouseleave", function() { d3.select(this).style("fill", leafColor) })
+        .on("click", function(d, i) { return qs.setRoot(d.data.obj) } )
+    
     node.append("text")
-        .attr("dy", ".35em")
-        .attr("y", function(d) { return 0})
-        .style("text-anchor", "middle")
+        .attr("class", (d, i) => { return i === 0  ? "rootText" : "leafText" })
         .text(function(d) { return d.data.name; });
+}
 
+// function arrangeInCircle(index, num, radius, cx=0.0, cy=0.0) {
+//     let x = 0.0, y = 0.0
+
+//     x = radius * Math.cos(index * (2*Math.PI / num)) + cx
+//     y = radius * Math.sin(index * (2*Math.PI / num)) + cy
+
+//     return [x, y]
+// }
+
+function arrangeInCircle(x, y, domainX=1920, domainY=1080) {
+    let xScale = d3.scaleLinear()
+        .domain([0, domainX])
+        .range([0, 2.0*Math.PI])
+
+    let yScale = d3.scaleLinear()
+        .domain([0, domainY])
+        .range([0, 480])
+
+    x = xScale(x)
+    y = yScale(y)
+
+    let xNew = y * Math.cos(x)
+    let yNew = y * Math.sin(x)
+
+    return [xNew, yNew]
 }

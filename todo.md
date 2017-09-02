@@ -1,6 +1,6 @@
 # TODO:
 
-- combine visualize(tree) and visualizeTree(treeData) into visualize(treeData)
+- update visualization when a new node is selected
 - add loading indicator when loading
 - add tree depth > 2
 - construct tree server-side, serve visible subtree
