@@ -145,15 +145,6 @@ function visualizeTree(treeData) {
 
     nodes = treemap(nodes)
 
-    let node = group.selectAll("g")
-            .data(nodes.descendants())
-        .enter().append("g")
-            .attr("transform", function(d, i) { 
-                return i === 0 ? 
-                    "translate(" + 0 + "," + 0 + ")" :
-                    "translate(" + arrangeInCircle(d.x, d.y)[0] + "," + arrangeInCircle(d.x, d.y)[1] + ")" 
-            })
-
     let link = group.selectAll(".link")
             .data(nodes.descendants().slice(1))
         .enter().append("path")
@@ -166,22 +157,31 @@ function visualizeTree(treeData) {
                 let pX = arrangeInCircle(d.parent.x, d.parent.y)[0]
                 let pY = arrangeInCircle(d.parent.x, d.parent.y)[1]
 
-                // return "M" + myX + "," + myY
-                // + "L" + pX + "," + pY;
-
                 return "M" + myX + "," + myY
-                + "C" + myX + "," + myY
-                + " " + pX + "," +  myY
-                + " " + pX + "," + pY;
+                + "L" + pX + "," + pY;
+
+                // return "M" + myX + "," + myY
+                // + "C" + myX + "," + myY
+                // + " " + pX + "," +  myY
+                // + " " + pX + "," + pY;
             })
 
-    node.append("circle")
+    let leafNode = group.selectAll("g")
+            .data(nodes.descendants())
+        .enter().append("g")
+            .attr("transform", function(d, i) { 
+                return i === 0 ? 
+                    "translate(" + 0 + "," + 0 + ")" :
+                    "translate(" + arrangeInCircle(d.x, d.y)[0] + "," + arrangeInCircle(d.x, d.y)[1] + ")" 
+            })
+
+    leafNode.append("circle")
         .attr("class", (d, i) => { return i === 0  ? "rootCircle" : "leafCircle" })
         .on("mouseover", function() { d3.select(this).style("fill", "blue") })
         .on("mouseleave", function() { d3.select(this).style("fill", leafColor) })
         .on("click", function(d, i) { return qs.setRoot(d.data.obj) } )
     
-    node.append("text")
+    leafNode.append("text")
         .attr("class", (d, i) => { return i === 0  ? "rootText" : "leafText" })
         .text(function(d) { return d.data.name; });
 }
