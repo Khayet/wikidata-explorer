@@ -49,8 +49,8 @@ function visualize(treeData) {
                 let pX = arrangeInCircle(d.parent.x, d.parent.y)[0]
                 let pY = arrangeInCircle(d.parent.x, d.parent.y)[1]
 
-                linkPosX.push(myX)
-                linkPosY.push(myY)
+                linkPosX.push( (myX + pX) / 2 )
+                linkPosY.push( (myY + pY) / 2 )
 
                 return "M" + myX + "," + myY
                 + "L" + pX + "," + pY;
@@ -80,11 +80,13 @@ function visualize(treeData) {
         .attr("class", (d, i) => { return i === 0  ? "rootText" : "leafText" })
         .text(function(d) { return d.data.name; });
 
-    link.append("text")
-        .attr("class", "linkText")
-        .attr("x", (d, i) => {return linkPosX[i]} )
-        .attr("y", (d, i) => {return linkPosY[i]} )
-        .text((d) => { return d.data.prop } )
+    let linkTextNode = group.selectAll(".linkText")
+            .data(nodes.descendants().slice(1))
+        .enter().append("text")
+            .attr("class", "linkText")
+            .attr("x", (d, i) => {return linkPosX[i]} )
+            .attr("y", (d, i) => {return linkPosY[i]} )
+            .text((d) => { return d.data.prop } )
 }
 
 function arrangeInCircle(x, y, domainX=1920, domainY=1080) {
