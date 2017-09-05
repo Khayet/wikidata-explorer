@@ -12,7 +12,7 @@ let currentTree = {}
 let currentTreeDepth = 0
 let functionQueue = []
 
-const queryLimit = 3
+const queryLimit = 2
 
 my.setCallback = function(newCallback) { callback = newCallback }
 
