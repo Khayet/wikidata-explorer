@@ -96,16 +96,16 @@ function parseResponse(res) {
 
     const tree = {}
 
-    tree["name"] = results[0].entityLabel.value
-    tree["children"] = []
+    tree.name = results[0].entityLabel.value
+    tree.children = []
     for (let i = 0; i < results.length; i++) 
     {
         const objUrlParts = results[i].object.value.split("/")
 
-        tree["children"].push( {"name": results[i].objectLabel.value,
-                                "children": [],                      
-                                "prop": results[i].propLabel.value,
-                                "obj": "wd:" + objUrlParts[objUrlParts.length -1],
+        tree.children.push( {"name": results[i].objectLabel.value,
+                             "children": [],                      
+                             "prop": results[i].propLabel.value,
+                             "obj": "wd:" + objUrlParts[objUrlParts.length -1],
                                 } )
     }
 
@@ -128,13 +128,13 @@ function addSubtree(subtree) {
         currentTreeDepth++
     }
     else {
-        let children = currentTree["children"]
+        let children = currentTree.children
         for (let i = 0; i < children.length; i++)
         {
-            if (children[i]["children"].length === 0 &&
-                children[i]["name"] === subtree["name"])
+            if (children[i].children.length === 0 &&
+                children[i].name === subtree.name)
             {
-                children[i]["children"] = Array.prototype.concat(currentTree["children"][i]["children"], subtree["children"]);
+                children[i].children = Array.prototype.concat(currentTree.children[i].children, subtree.children);
             }
         }
     }
@@ -143,12 +143,12 @@ function addSubtree(subtree) {
 
 function completeTree() {
     // find remaining nodes:
-    const children = currentTree["children"]
+    const children = currentTree.children
     for (let i = 0; i < children.length; i++)
     {
-        if (children[i]["children"].length === 0)
+        if (children[i].children.length === 0)
         {
-            functionQueue.push([getWikidata, children[i]["obj"]])
+            functionQueue.push([getWikidata, children[i].obj])
         }
     }
     executeQueue()
