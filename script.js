@@ -49,28 +49,16 @@ function visualize(treeData) {
                 let pX = arrangeInCircle(d.parent.x, d.parent.y)[0]
                 let pY = arrangeInCircle(d.parent.x, d.parent.y)[1]
 
-                let cP1 = arrangeInCircle(d.x, d.parent.y)
-                let cP2 = arrangeInCircle((d.parent.x + d.parent.x) / 2.0, (d.y + d.parent.y) / 2.0)
-
-                // let myX = d.x
-                // let myY = d.y
-                // let pX = d.parent.x
-                // let pY = d.parent.y
-                // let cP1 = [d.x, d.parent.y]
-                // let cP2 = [d.parent.x, (d.y + d.parent.y) / 2.0]
-
+                let cP1 = [myX, pY]
+                let cP2 = [(myX + pX) / 2.0, (myY + pY) / 2.0]
+                // let cP1 = arrangeInCircle(d.x, d.parent.y)
+                // let cP2 = arrangeInCircle((d.x + d.parent.x) / 2.0, (d.y + d.parent.y) / 2.0)
 
                 linkPosX.push( (myX + pX) / 2 )
                 linkPosY.push( (myY + pY) / 2 )
 
                 // return "M" + myX + "," + myY
                 // + "L" + pX + "," + pY;
-
-                // return "M" + myX + "," + myY
-                // + "C" + myX + "," + myY
-                // + " " + pX + "," +  myY
-                // + " " + pX + "," + pY;
-
 
                 return "M" + myX + "," + myY
                 + "C" + cP1[0] + "," + cP1[1]
