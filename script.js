@@ -16,32 +16,27 @@ function visualize(treeData) {
                     .attr('viewBox', '0 0 ' +  ( width + margin.left + margin.right ) + ' ' + ( height  + margin.top + margin.bottom ) )
                     .attr('height', ( height + 'px' ) )
                     .attr('width', '100%')
-                    .attr('preserveAspectRatio', 'none')
-                    .append( 'g' )
-                    .attr( 'transform', 'translate(' + margin.left + ',' + margin.top + ')' );
-
-    console.log(treeData)
-
-    const radii = [200, 480]
+                    
     const context = d3.select("#context")
     let svgWidth = svg.node().getBoundingClientRect().width
     let svgHeight = svg.node().getBoundingClientRect().height
     const center = [svgWidth / 2, svgHeight / 2]
 
+    const group = svg.append("g")
+    .attr("transform", "translate(" + center[0] + "," + center[1] + ")")
+
     const highlightColor = "black"
     
-    svg.selectAll("g")
+    group.selectAll("g")
         .data([])
         .exit().remove()
 
-    const group = svg.append("g")
-        .attr("transform", "translate(" + center[0] + "," + center[1] + ")")
 
     let rootName = treeData["name"]
     context.append("text").text(rootName)
 
     let treemap = d3.tree(rootName)
-        .size([svg.attr("width"), svg.attr("height")])
+        .size([svgWidth, svgHeight])
     
     let nodes = d3.hierarchy(treeData, function(d) {
         return d.children
@@ -58,11 +53,11 @@ function visualize(treeData) {
             .attr("class", "link")
             .attr("d", function(d, i) {
 
-                let myX = arrangeInCircle(d.x, d.y)[0]
-                let myY = arrangeInCircle(d.x, d.y)[1]
+                let myX = arrangeInCircle(d.x, d.y, svgWidth, svgHeight)[0]
+                let myY = arrangeInCircle(d.x, d.y, svgWidth, svgHeight)[1]
 
-                let pX = arrangeInCircle(d.parent.x, d.parent.y)[0]
-                let pY = arrangeInCircle(d.parent.x, d.parent.y)[1]
+                let pX = arrangeInCircle(d.parent.x, d.parent.y, svgWidth, svgHeight)[0]
+                let pY = arrangeInCircle(d.parent.x, d.parent.y, svgWidth, svgHeight)[1]
 
                 let cP1 = [myX, pY]
                 let cP2 = [(myX + pX) / 2.0, (myY + pY) / 2.0]
@@ -90,7 +85,7 @@ function visualize(treeData) {
                 }
                 return i === 0 ? 
                     "translate(" + 0 + "," + 0 + ")" :
-                    "translate(" + arrangeInCircle(d.x, d.y)[0] + "," + arrangeInCircle(d.x, d.y)[1] + ")" 
+                    "translate(" + arrangeInCircle(d.x, d.y, svgWidth, svgHeight)[0] + "," + arrangeInCircle(d.x, d.y, svgWidth, svgHeight)[1] + ")" 
             })
 
     leafNode.append("circle")
@@ -119,7 +114,7 @@ function arrangeInCircle(x, y, domainX=1920, domainY=1080) {
 
     let yScale = d3.scaleLinear()
         .domain([0, domainY])
-        .range([0, 480])
+        .range([0, (domainY / 2.0)-60])
 
     x = xScale(x)
     y = yScale(y)
