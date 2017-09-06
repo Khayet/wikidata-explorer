@@ -102,11 +102,21 @@ function parseResponse(res) {
     {
         const objUrlParts = results[i].object.value.split("/")
 
-        tree.children.push( {"name": results[i].objectLabel.value,
-                             "children": [],                      
-                             "prop": results[i].propLabel.value,
-                             "obj": "wd:" + objUrlParts[objUrlParts.length -1],
-                                } )
+        // tree.children.push( {"name": results[i].objectLabel.value,
+        //                      "children": [],                      
+        //                      "prop": results[i].propLabel.value,
+        //                      "obj": "wd:" + objUrlParts[objUrlParts.length -1],
+        //                         } )
+
+        tree.children.push( { "name": results[i].propLabel.value,
+                              "children": [ { "name": results[i].objectLabel.value,
+                                              "children": [],                      
+                                              "prop": results[i].propLabel.value,
+                                              "obj": "wd:" + objUrlParts[objUrlParts.length -1],
+                                            } ],
+                              "prop": null,
+                              "obj": null
+                            })
     }
 
     addSubtree(tree)

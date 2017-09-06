@@ -87,7 +87,12 @@ function visualize(treeData) {
             })
 
     leafNode.append("circle")
-        .attr("class", (d, i) => { return i === 0  ? "rootCircle" : "leafCircle" })
+        .attr("class", (d, i) => {
+            if (i === 0) return "rootCircle"
+            if (d.data.obj === null) return "linkCircle"
+            return "leafCircle" 
+            // return i === 0  ? "rootCircle" : "leafCircle" 
+        })
         .on("mouseover", function() {  d3.select(this).style("fill", highlightColor)})
         .on("mouseleave", function() { d3.select(this).style("fill", null) })
         .on("click", function(d, i) { return qs.setRoot(d.data.obj) } )
@@ -96,13 +101,13 @@ function visualize(treeData) {
         .attr("class", (d, i) => { return i === 0  ? "rootText" : "leafText" })
         .text(function(d) { return d.data.name; });
 
-    let linkTextNode = group.selectAll(".linkText")
-            .data(nodes.descendants().slice(1))
-        .enter().append("text")
-            .attr("class", "linkText")
-            .attr("x", (d, i) => {return linkPosX[i]} )
-            .attr("y", (d, i) => {return linkPosY[i]} )
-            .text((d) => { return d.data.prop } )
+    // let linkTextNode = group.selectAll(".linkText")
+    //         .data(nodes.descendants().slice(1))
+    //     .enter().append("text")
+    //         .attr("class", "linkText")
+    //         .attr("x", (d, i) => {return linkPosX[i]} )
+    //         .attr("y", (d, i) => {return linkPosY[i]} )
+    //         .text((d) => { return d.data.prop } )
 }
 
 function arrangeInCircle(x, y, domainX, domainY) {
