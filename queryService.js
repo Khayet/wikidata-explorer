@@ -12,7 +12,7 @@ let currentTree = {}
 let currentTreeDepth = 0
 let functionQueue = []
 
-const queryLimit = 2
+const queryLimit = 10
 
 my.setCallback = function(newCallback) { callback = newCallback }
 
@@ -33,7 +33,8 @@ my.setRoot = function(newRoot) {
 function getWikidata(entity=root) {
     const query = constructQueryPropsAndObjects(entity, queryLimit) 
 
-    document.getElementById("sampleEntity").textContent = root
+    // document.getElementById("sampleEntity").textContent = root
+    $('#sampleEntity').textContent = root
     
     const httpRequest = new XMLHttpRequest()
     httpRequest.addEventListener("load", () => { parseResponse(httpRequest.responseText) })
@@ -63,6 +64,27 @@ function constructQueryPropsAndObjects(entity, limit = 10) {
     "} " +
     "LIMIT " + limit
 
+    // const query = 
+    // "PREFIX entity: <http://www.wikidata.org/entity/> " +
+    // "SELECT ?propUrl ?propLabel ?valUrl ?valLabel ?picture " +
+    // "WHERE { " +
+    // "hint:Query hint:optimizer 'None' . " +
+    // "{BIND(entity:Q42 AS ?valUrl) . " +
+    // "BIND(\"N/A\" AS ?propUrl ) . " +
+    // "BIND(\"identity\"@en AS ?propLabel ) . " +
+    // "} " +
+    // "UNION " +
+    // "{entity:Q42 ?propUrl ?valUrl . " +
+    // "?property ?ref ?propUrl . " +
+    // "?property rdf:type wikibase:Property . " +
+    // "?property rdfs:label ?propLabel} " +
+    // "?valUrl rdfs:label ?valLabel " +
+    // "FILTER (LANG(?valLabel) = 'en') . " +
+    // "OPTIONAL{ ?valUrl wdt:P18 ?picture .} " +
+    // "FILTER (lang(?propLabel) = 'en' )} " +
+    // "ORDER BY ?propUrl ?valUrl " +
+    // "LIMIT 50"
+ 
     // console.log(query)
     return query
 } 

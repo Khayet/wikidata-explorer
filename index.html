@@ -51,15 +51,35 @@
             }
 
         </style>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
     </head>
 
     <body>
         <script src="https://d3js.org/d3.v4.js"></script>
-        <h4>All properties and related entities of sample entity:</h4>
-        <p id="sampleEntity"></p>
-        <!-- <p id="wikidata"></p> -->
-        <svg width="1920" height="1080"></svg>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
         <script src="queryService.js"></script>
         <script src="script.js"></script>
+		
+		<div class="container-fluid">
+			<div class="row">
+				<div class="col-md-6" id="chart">
+					<h4>All properties and related entities of sample entity:</h4>
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col-md-9" id="chart">
+			        <p id="sampleEntity"></p>
+			        <!-- <p id="wikidata"></p> -->
+			        <svg id="graph"></svg>
+				</div>
+				<div class="col-md-3" id="context">
+				</div>
+			</div>
+       	</div>
+
     </body>
 </html>
+
+
+

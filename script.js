@@ -8,11 +8,25 @@ qs.setRoot(selectedEntity)
 function visualize(treeData) {
     // inspired by the tree diagram example from: https://leanpub.com/d3-t-and-t-v4/read
 
+    var margin = { top: 20, right: 30, bottom: 20, left: 70 },
+        width =  $('#chart').width() - margin.left - margin.right,
+        height =  $(window).height() - margin.top - margin.bottom;
+
+    var svg = d3.select( '#graph' )
+                    .attr('viewBox', '0 0 ' +  ( width + margin.left + margin.right ) + ' ' + ( height  + margin.top + margin.bottom ) )
+                    .attr('height', ( height + 'px' ) )
+                    .attr('width', '100%')
+                    .attr('preserveAspectRatio', 'none')
+                    .append( 'g' )
+                    .attr( 'transform', 'translate(' + margin.left + ',' + margin.top + ')' );
+
     console.log(treeData)
 
     const radii = [200, 480]
-    const svg = d3.selectAll("svg")
-    const center = [svg.attr("width") / 2, svg.attr("height") / 2]
+    const context = d3.select("#context")
+    let svgWidth = svg.node().getBoundingClientRect().width
+    let svgHeight = svg.node().getBoundingClientRect().height
+    const center = [svgWidth / 2, svgHeight / 2]
 
     const highlightColor = "black"
     
@@ -24,6 +38,7 @@ function visualize(treeData) {
         .attr("transform", "translate(" + center[0] + "," + center[1] + ")")
 
     let rootName = treeData["name"]
+    context.append("text").text(rootName)
 
     let treemap = d3.tree(rootName)
         .size([svg.attr("width"), svg.attr("height")])
