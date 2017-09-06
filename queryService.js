@@ -30,6 +30,15 @@ my.setRoot = function(newRoot) {
     executeQueue()
 }
 
+function constructTree() {
+    if (currentTreeDepth === 0)
+    {
+        functionQueue.push([getWikidata, undefined])
+        functionQueue.push([completeTree, undefined])
+    }
+    executeQueue()
+}
+
 function getWikidata(entity=root) {
     const query = constructQueryPropsAndObjects(entity, queryLimit) 
 
@@ -102,12 +111,6 @@ function parseResponse(res) {
     {
         const objUrlParts = results[i].object.value.split("/")
 
-        // tree.children.push( {"name": results[i].objectLabel.value,
-        //                      "children": [],                      
-        //                      "prop": results[i].propLabel.value,
-        //                      "obj": "wd:" + objUrlParts[objUrlParts.length -1],
-        //                         } )
-
         tree.children.push( { "name": results[i].propLabel.value,
                               "children": [ { "name": results[i].objectLabel.value,
                                               "children": [],                      
@@ -123,47 +126,50 @@ function parseResponse(res) {
     executeQueue()
 }
 
-function constructTree() {
-    if (currentTreeDepth === 0)
-    {
-        functionQueue.push([getWikidata, undefined])
-        functionQueue.push([completeTree, undefined])
-    }
-    executeQueue()
-}
-
 function addSubtree(subtree) {
     if (currentTreeDepth === 0) {
         currentTree = subtree
         currentTreeDepth++
     }
     else {
-        let children = currentTree.children
-        for (let i = 0; i < children.length; i++)
-        {
-            if (children[i].children.length === 0 &&
-                children[i].name === subtree.name)
-            {
-                children[i].children = Array.prototype.concat(currentTree.children[i].children, subtree.children);
-            }
-        }
+        // find leave by name
+        let node = findEmptyNodeWithName(currentTree, subtree.name)
+        node.children = node.children.concat(subtree.children)
     }
 }
 
+function findEmptyNodeWithName(tree, name) {
+    // breadth first search for node without children and passed name
+
+    let queue = tree.children
+    let max = queue.length, i = 0
+
+    while (i < max)
+    {
+        var node = queue[i]
+        if (node.children.length === 0 && node.name === name) { return node }
+
+        queue = queue.concat(node.children)
+        max += node.children.length
+        i++
+    }
+}
 
 function completeTree() {
-    // find remaining nodes:
-    const children = currentTree.children
-    for (let i = 0; i < children.length; i++)
+    let queue = currentTree.children
+    let max = queue.length, i = 0
+
+    while (i < max)
     {
-        if (children[i].children.length === 0)
-        {
-            functionQueue.push([getWikidata, children[i].obj])
-        }
+        var node = queue[i]
+        if (node.children.length === 0) { functionQueue.push([getWikidata, node.obj]) }
+
+        queue = queue.concat(node.children)
+        max += node.children.length
+        i++
     }
     executeQueue()
 }
-
 
 function executeQueue() {
     if (functionQueue.length > 0)

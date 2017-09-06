@@ -78,9 +78,6 @@ function visualize(treeData) {
             .data(nodes.descendants())
         .enter().append("g")
             .attr("transform", function(d, i) { 
-                if (i === 0) {
-                    console.table(d)
-                }
                 return i === 0 ? 
                     "translate(" + 0 + "," + 0 + ")" :
                     "translate(" + arrangeInCircle(d.x, d.y, svgWidth, height)[0] + "," + arrangeInCircle(d.x, d.y, svgWidth, height)[1] + ")" 
