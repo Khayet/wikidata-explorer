@@ -59,19 +59,17 @@ function visualize(treeData) {
 
                 let cP1 = [myX, pY]
                 let cP2 = [(myX + pX) / 2.0, (myY + pY) / 2.0]
-                // let cP1 = arrangeInCircle(d.x, d.parent.y)
-                // let cP2 = arrangeInCircle((d.x + d.parent.x) / 2.0, (d.y + d.parent.y) / 2.0)
 
                 linkPosX.push( (myX + pX) / 2 )
                 linkPosY.push( (myY + pY) / 2 )
 
-                // return "M" + myX + "," + myY
-                // + "L" + pX + "," + pY;
-
                 return "M" + myX + "," + myY
-                + "C" + cP1[0] + "," + cP1[1]
-                + " " + cP2[0] + "," + cP2[1]
-                + " " + pX + "," + pY;
+                + "L" + pX + "," + pY;
+
+                // return "M" + myX + "," + myY
+                // + "C" + cP1[0] + "," + cP1[1]
+                // + " " + cP2[0] + "," + cP2[1]
+                // + " " + pX + "," + pY;
             })
 
     let leafNode = group.selectAll("g")
@@ -88,23 +86,20 @@ function visualize(treeData) {
             if (i === 0) return "rootCircle"
             if (d.data.obj === null) return "linkCircle"
             return "leafCircle" 
-            // return i === 0  ? "rootCircle" : "leafCircle" 
         })
         .on("mouseover", function() {  d3.select(this).style("fill", highlightColor)})
         .on("mouseleave", function() { d3.select(this).style("fill", null) })
+        
+    leafNode.selectAll(".leafCircle")
         .on("click", function(d, i) { return qs.setRoot(d.data.obj) } )
     
     leafNode.append("text")
-        .attr("class", (d, i) => { return i === 0  ? "rootText" : "leafText" })
+        .attr("class", (d, i) => { 
+            if (i === 0) return "rootText"
+            if (d.data.obj === null) return "linkText"
+            return "leafText" 
+         })
         .text(function(d) { return d.data.name; });
-
-    // let linkTextNode = group.selectAll(".linkText")
-    //         .data(nodes.descendants().slice(1))
-    //     .enter().append("text")
-    //         .attr("class", "linkText")
-    //         .attr("x", (d, i) => {return linkPosX[i]} )
-    //         .attr("y", (d, i) => {return linkPosY[i]} )
-    //         .text((d) => { return d.data.prop } )
 }
 
 function arrangeInCircle(x, y, domainX, domainY) {
