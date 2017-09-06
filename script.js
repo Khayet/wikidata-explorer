@@ -87,12 +87,12 @@ function visualize(treeData) {
             if (d.data.obj === null) return "linkCircle"
             return "leafCircle" 
         })
-        .on("mouseover", function() {  d3.select(this).style("fill", highlightColor)})
-        .on("mouseleave", function() { d3.select(this).style("fill", null) })
         
     leafNode.selectAll(".leafCircle")
         .on("click", function(d, i) { return qs.setRoot(d.data.obj) } )
-    
+        .on("mouseover", function() {  d3.select(this).style("fill", highlightColor)})
+        .on("mouseleave", function() { d3.select(this).style("fill", null) })
+
     leafNode.append("text")
         .attr("class", (d, i) => { 
             if (i === 0) return "rootText"

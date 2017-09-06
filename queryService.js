@@ -7,7 +7,6 @@ let my = {}
 let callback = null
 let root = ""
 
-// TODO: do something about the naming here
 let currentTree = {}
 let currentTreeDepth = 0
 let functionQueue = []
@@ -107,19 +106,43 @@ function parseResponse(res) {
 
     tree.name = results[0].entityLabel.value
     tree.children = []
+
+    let propNames = new Set()
+
     for (let i = 0; i < results.length; i++) 
     {
         const objUrlParts = results[i].object.value.split("/")
+        const propLabel = results[i].propLabel.value
 
-        tree.children.push( { "name": results[i].propLabel.value,
-                              "children": [ { "name": results[i].objectLabel.value,
-                                              "children": [],                      
-                                              "prop": results[i].propLabel.value,
-                                              "obj": "wd:" + objUrlParts[objUrlParts.length -1],
-                                            } ],
-                              "prop": null,
-                              "obj": null
-                            })
+        if (propNames.has(propLabel))
+        {
+            let cont = false
+            for (let j = 0; j < tree.children.length; j++)
+            {
+                if (tree.children[j].name === propLabel) 
+                { 
+                    tree.children[j].children.push( { "name": results[i].objectLabel.value,
+                                             "children": [],                      
+                                             "prop": propLabel,
+                                             "obj": "wd:" + objUrlParts[objUrlParts.length -1], 
+                                            } )
+                    break
+                }
+            }
+        }
+        else
+        {
+            tree.children.push( { "name": propLabel,
+                                  "children": [ { "name": results[i].objectLabel.value,
+                                                  "children": [],                      
+                                                  "prop": propLabel,
+                                                  "obj": "wd:" + objUrlParts[objUrlParts.length -1],
+                                                } ],
+                                  "prop": null,
+                                  "obj": null
+                                } )
+            propNames.add(propLabel)
+        }
     }
 
     addSubtree(tree)
