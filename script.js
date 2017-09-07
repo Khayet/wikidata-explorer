@@ -36,7 +36,11 @@ function visualize(treeData, rootDetails) {
     const context = d3.select("#context")
     d3.select("#label").html(rootDetails.label)
     d3.select("#image").attr('src', rootDetails.imageUrl)
-    d3.select("#description").html(rootDetails.desc)
+    // d3.select("#description").html(rootDetails.extract)
+    if (typeof rootDetails.extract !== 'undefined')
+        d3.select("#description").html(rootDetails.extract)
+    else
+        d3.select("#description").html(rootDetails.desc)
 
 
     let treemap = d3.tree(rootName)

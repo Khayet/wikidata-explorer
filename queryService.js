@@ -19,6 +19,9 @@ let numQueries = 0
 my.setCallback = function(newCallback) { callback = newCallback }
 
 my.setRoot = function(newRoot) {
+    if (typeof newRoot === 'undefined')
+        return
+
     if (callback === null) {
         console.log("ERROR: No callback function defined.")
     }
@@ -97,6 +100,19 @@ function constructTree() {
     executeQueue()
 }
 
+function getWikipediaExtract(entity)
+{
+    $.getJSON("https://www.wikidata.org/w/api.php?action=wbgetentities&format=json&props=sitelinks&sitefilter=enwiki&ids=" + entity.split(":")[1] + "&callback=?", function(data){
+        console.log(data);
+        let title = data.entities[entity.split(":")[1]].sitelinks.enwiki.title
+        $.getJSON("https://en.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&exintro=&explaintext=&titles=" + title + "&callback=?", function(data){
+            let pages = data.query.pages
+            rootDetails["extract"] = pages[Object.keys(pages)[0]].extract
+        })
+
+    })
+}
+
 function getWikidata(entity=root) {
     const query = constructQueryPropsAndObjects(entity, queryLimit) 
 
@@ -131,6 +147,7 @@ function getRootDetails(entity=root)
             let filename = res.results.bindings[0].pic.value.split("/")
             // rootDetails["imageFilename"] = filename[filename.length - 1]
             getPicture(filename[filename.length - 1])
+            getWikipediaExtract(entity)
         }
         // context.html = res.results.bindings[0].entityLabel.value + res.results.bindings[0].pic.value
     })

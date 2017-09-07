@@ -11,7 +11,7 @@
 
             .link {
                 fill: none;
-                stroke: hsl(223, 18%, 74%);
+                stroke: hsl(233, 46%, 74%);
                 stroke-width: 4px;
             }
 
@@ -39,7 +39,7 @@
 
             .linkText {
                 font-family: "verdana";
-                font-size: 80%;
+                font-size: 60%;
                 text-anchor: middle;
                 fill: black;
             }
@@ -54,6 +54,19 @@
                 font-family: "verdana";
                 font-size: 100%;
                 font-weight: 600;
+                text-anchor: middle;
+                fill: black;
+            }
+
+            .collapsedCircle {
+                r: 10;
+                stroke: none;
+                fill: hsl(40, 91%, 49%);
+            }
+
+            .collapsedCircleText {
+                font-family: "verdana";
+                font-size: 60%;
                 text-anchor: middle;
                 fill: black;
             }
@@ -76,16 +89,18 @@
 			</div>
 
 			<div class="row">
-				<div class="col-md-9" id="chart">
+				<div class="col-md-8" id="chart">
 			        <p id="sampleEntity"></p>
 			        <!-- <p id="wikidata"></p> -->
 			        <svg id="graph"></svg>
 				</div>
-				<div class="col-md-3">
+				<div class="col-md-3" style="margin: 15px;">
 					<p id="label" class="font-weight-bold"></p>
-					<img id="image" style="max-width:100%; max-height:100%;">
-					<p id="description"></p>
+					<img id="image" style="max-width:100%; max-height:100%;" style="padding:15px;">
+					<p id="description" style='font-family: "Times New Roman", Georgia, Serif; text-align: justify; margin-top: 1rem;'></p>
 					<a href="#" onclick="qs.back()">back</a>
+				</div>
+				<div class="col-md-1" style="margin: 15px;">
 				</div>
 			</div>
        	</div>
