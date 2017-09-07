@@ -2,35 +2,43 @@
 <html>
     <head>
         <!-- <link rel="stylesheet" href="index.css"> -->
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
         <title>Wikidata radial node-link diagram.</title>
         <style>
 
             svg {
-                background-color: #FFFFFF;
+                background-color: #FAFAFA;
             } 
 
             .link {
                 fill: none;
                 stroke: hsl(223, 18%, 74%);
-                stroke-width: 4px;
+                stroke-width: 3px;
             }
 
             .linkCircle {
                 r: 20;
                 stroke: none;
                 stroke-width: 0.14%;
-                fill: hsl(359, 99%, 100%);
+                fill: #FAFAFA;
             }
 
             .leafCircle {
                 r: 25;
                 stroke: none;
                 stroke-width: 0.14%;
-                fill: hsl(359, 99%, 100%);
+                fill: hsl(50, 99%, 90%);
+            }
+
+            .collapsedCircle {
+                r: 5;
+                stroke: black;
+                stroke-width: 0.14%;
+                fill: yellowgreen;  
             }
 
             .leafText {
-                font-family: "verdana";
+                font-family: "Arial";
                 font-size: 100%;
                 text-anchor: middle;
                 fill: black;
@@ -38,7 +46,7 @@
             }
 
             .linkText {
-                font-family: "verdana";
+                font-family: "Arial";
                 font-size: 80%;
                 text-anchor: middle;
                 fill: black;
@@ -47,11 +55,11 @@
             .rootCircle {
                 r: 30;
                 stroke: none;
-                fill: hsl(359, 99%, 100%);
+                fill: hsl(50, 99%, 90%);
             }
 
             .rootText {
-                font-family: "verdana";
+                font-family: "Arial";
                 font-size: 100%;
                 font-weight: 600;
                 text-anchor: middle;
