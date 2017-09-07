@@ -61,14 +61,14 @@ function visualize(treeData, rootDetails) {
             .attr("class", "link")
             .attr("d", function(d, i) {
 
-                let myX = arrangeInCircle(d.x, d.y, svgWidth, height)[0]
-                let myY = arrangeInCircle(d.x, d.y, svgWidth, height)[1]
+                let myX = toCircular(d.x, d.y, svgWidth, height)[0]
+                let myY = toCircular(d.x, d.y, svgWidth, height)[1]
 
-                let pX = arrangeInCircle(d.parent.x, d.parent.y, svgWidth, height)[0]
-                let pY = arrangeInCircle(d.parent.x, d.parent.y, svgWidth, height)[1]
+                let pX = toCircular(d.parent.x, d.parent.y, svgWidth, height)[0]
+                let pY = toCircular(d.parent.x, d.parent.y, svgWidth, height)[1]
 
-                let cP1 = [myX, pY]
-                let cP2 = [(myX + pX) / 2.0, (myY + pY) / 2.0]
+                // let cP1 = [myX, pY]
+                // let cP2 = [(myX + pX) / 2.0, (myY + pY) / 2.0]
 
                 linkPosX.push( (myX + pX) / 2 )
                 linkPosY.push( (myY + pY) / 2 )
@@ -81,11 +81,8 @@ function visualize(treeData, rootDetails) {
                 // + " " + cP2[0] + "," + cP2[1]
                 // + " " + pX + "," + pY;
             })
-            .on("click", (d, i) => collapse(d, i) )
             .on("mouseover", (d, i) => highlightPathToRoot(d, i, "green"))
             .on("mouseleave", (d, i) => highlightPathToRoot(d, i, null))
-
-    console.log(link)
 
     let leafNode = group.selectAll("g")
             .data(nodes.descendants())
@@ -93,7 +90,7 @@ function visualize(treeData, rootDetails) {
             .attr("transform", function(d, i) { 
                 return i === 0 ? 
                     "translate(" + 0 + "," + 0 + ")" :
-                    "translate(" + arrangeInCircle(d.x, d.y, svgWidth, height)[0] + "," + arrangeInCircle(d.x, d.y, svgWidth, height)[1] + ")" 
+                    "translate(" + toCircular(d.x, d.y, svgWidth, height)[0] + "," + toCircular(d.x, d.y, svgWidth, height)[1] + ")" 
             })
 
     let circles = leafNode.append("circle")
@@ -103,11 +100,43 @@ function visualize(treeData, rootDetails) {
             if (d.data.obj === null) return "linkCircle"
             return "leafCircle" 
         })
-    
+
+
+    leafNode.selectAll(".leafCircle")
+        .on("mouseover", (d, i) => highlightPathToRoot(d, i, 'hsl(60, 50%, 64%)') )
+        .on("mouseleave", (d, i) => highlightPathToRoot(d, i, null) )
+        .on("click", function(d, i) { return d.data.obj ? qs.setRoot(d.data.obj) : null } )
+
+    let linkCircles = leafNode.selectAll(".linkCircle")
+        .on("click", (d, i) => collapse(d, i) )
+        .on("mouseover", (d, i) => highlightPathToRoot(d, i, "green"))
+        .on("mouseleave", (d, i) => highlightPathToRoot(d, i, null))        
+
+    leafNode.append("text")
+        .on("mouseleave", (d, i) => highlightPathToRoot(d, i, null) )
+        .style("alignment-baseline", "middle")
+        .attr("class", (d, i) => { 
+            if (i === 0) return "rootText"
+            if (d.data.obj === null) return "linkText"
+            return "leafText" 
+         })
+        .text(function(d) { return d.data.name; });
+
+    leafNode.selectAll(".leafText")
+        .on("click", function(d, i) { return qs.setRoot(d.data.obj) } )
+        .on("mouseover", (d, i) => highlightPathToRoot(d, i, 'hsl(60, 50%, 64%)') )
+        
+
+    leafNode.selectAll(".linkText")
+        .on("click", (d, i) => collapse(d, i) )
+        .on("mouseover", (d, i) => highlightPathToRoot(d, i, 'green') )
+        
+
     function collapse(d, i) {
-        if (d.data.name === "collapsed") {
-            console.log(collapsedNodes)
-            reattachNodes(treeData, d.data.parent)
+        console.log(d)
+        if (d.children[0].data.name === "collapsed") {
+            console.log("expanding..")
+            reattachNodes(treeData, d.data)
             visualize(treeData, rootDetails)
         } else
         {
@@ -158,72 +187,47 @@ function visualize(treeData, rootDetails) {
 
         d3.select(this).style("cursor", "default"); 
     }
-
-    leafNode.selectAll(".leafCircle")
-        .on("click", function(d, i) { return qs.setRoot(d.data.obj) } )
-        .on("mouseover", (d, i) => highlightPathToRoot(d, i, 'hsl(60, 50%, 64%)') )
-        .on("mouseleave", (d, i) => highlightPathToRoot(d, i, null) )
-
-    leafNode.append("text")
-        .on("click", function(d, i) { return qs.setRoot(d.data.obj) } )
-        .on("mouseover", (d, i) => highlightPathToRoot(d, i, 'hsl(60, 50%, 64%)') )
-        .on("mouseleave", (d, i) => highlightPathToRoot(d, i, null) )
-        // .style("text-anchor","start") 
-        // .style("text-anchor", (d, i) => { 
-        //     if (i === 0) return "start"
-        //     if (d.data.obj === null) return "middle"
-        //     return "start"
-        //  })
-        .style("alignment-baseline", "middle")
-        .attr("startOffset","100%")
-        .attr("class", (d, i) => { 
-            if (i === 0) return "rootText"
-            if (d.data.obj === null) return "linkText"
-            return "leafText" 
-         })
-        .text(function(d) { return d.data.name; });
 }
 
 function cutNode(tree, cutNode) {
+    if (cutNode.children.length === 0) { return }
+
     let queue = tree.children
     let max = queue.length, i = 0
 
     while (i < max)
     {
-        var node = queue[i]
+        var treeNode = queue[i]
+
         // this is not a guarantee that objects are cut and re-attached at the same position, 
         // but sufficient for our purposes
-        if (node.obj === cutNode.data.obj && node.parent === cutNode.data.parent) 
+
+        if (treeNode.name === cutNode.data.name &&
+            treeNode.parent === cutNode.data.parent) 
         {
-            console.log(node.children)
-            collapsedNodes[node.obj] = node.children
-            node.children = [ {"name": "collapsed", 
+            collapsedNodes[treeNode.name] = treeNode.children
+            treeNode.children = [ {"name": "collapsed", 
                                "children": [],
-                               "parent": node } ] 
-            console.log(collapsedNodes)
+                               "parent": treeNode } ]
             return
         }
 
-        queue = queue.concat(node.children)
-        max += node.children.length
+        queue = queue.concat(treeNode.children)
+        max += treeNode.children.length
         i++
     }
 }
 
 function reattachNodes(tree, connectingNode) {
-    console.log("Reattaching node.. ")
-    console.log(connectingNode)
     let queue = tree.children
     let max = queue.length, i = 0
 
     while (i < max)
     {
         var node = queue[i]
-        if (node === connectingNode && node.parent === connectingNode.parent) {
-            console.log(collapsedNodes[node.obj])
-            node.children = collapsedNodes[node.obj]
-            console.log(node)
-            collapsedNodes = []
+        if (node === connectingNode && node.parent === connectingNode.parent && node.name === connectingNode.name) {
+            node.children = collapsedNodes[node.name]
+            collapsedNodes[node.name] = []
             return
         }
 
@@ -233,7 +237,7 @@ function reattachNodes(tree, connectingNode) {
     }
 }
 
-function arrangeInCircle(x, y, domainX, domainY) {
+function toCircular(x, y, domainX, domainY) {
     let xScale = d3.scaleLinear()
         .domain([0, domainX])
         .range([0, 2.0*Math.PI])
