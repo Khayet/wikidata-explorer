@@ -148,9 +148,6 @@ function parseResponse(res) {
     tree.name = results[0].entityLabel.value
     tree.children = []
 
-    // if the property is already a child, push object to its children
-    // if the property is not a child yet, push it to the tree's children
-
     let propNames = new Set()
 
     for (let i = 0; i < results.length; i++) 
@@ -159,14 +156,15 @@ function parseResponse(res) {
         const propLabel = results[i].propLabel.value
 
         if (propNames.has(propLabel))
-        {
+        { // if the property is already a child, push object to its children
             let cont = false
             for (let j = 0; j < tree.children.length; j++)
             {
                 if (tree.children[j].name === propLabel) 
                 { 
                     tree.children[j].children.push( { "name": results[i].objectLabel.value,
-                                             "children": [],                      
+                                             "children": [],
+                                             "parent": tree.children[j],              
                                              "prop": propLabel,
                                              "obj": "wd:" + objUrlParts[objUrlParts.length -1], 
                                             } )
@@ -175,16 +173,22 @@ function parseResponse(res) {
             }
         }
         else
-        {
-            tree.children.push( { "name": propLabel,
-                                  "children": [ { "name": results[i].objectLabel.value,
-                                                  "children": [],                      
-                                                  "prop": propLabel,
-                                                  "obj": "wd:" + objUrlParts[objUrlParts.length -1],
-                                                } ],
-                                  "prop": null,
-                                  "obj": null
-                                } )
+        { // if the property is not a child yet, push it to the tree's children
+            let newProp = { "name": propLabel,
+                            "children": [],
+                            "parent": tree,
+                            "prop": null,
+                            "obj": null
+                          }
+            
+            newProp.children.push( { "name": results[i].objectLabel.value,
+                                     "children": [],
+                                     "parent": newProp,                     
+                                     "prop": propLabel,
+                                     "obj": "wd:" + objUrlParts[objUrlParts.length -1],
+                                    })
+
+            tree.children.push( newProp )
             propNames.add(propLabel)
         }
     }
