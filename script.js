@@ -23,7 +23,8 @@ function visualize(treeData, rootDetails) {
     let svgHeight = svg.node().getBoundingClientRect().height
     const center = [svgWidth / 2, svgHeight / 2]
 
-    const highlightColor = "black"
+    const highlightColor = "hsl(60, 50%, 64%)"
+    const cuttableColor = "darkred"
     
     svg.selectAll("g")
         .data([])
@@ -88,7 +89,7 @@ function visualize(treeData, rootDetails) {
                 // + " " + cP2[0] + "," + cP2[1]
                 // + " " + pX + "," + pY;
             })
-            .on("mouseover", (d, i) => highlightPathToRoot(d, i, "green"))
+            .on("mouseover", (d, i) => highlightPathToRoot(d, i, highlightColor))
             .on("mouseleave", (d, i) => highlightPathToRoot(d, i, null))
 
     let leafNode = group.selectAll("g")
@@ -110,17 +111,16 @@ function visualize(treeData, rootDetails) {
 
 
     leafNode.selectAll(".leafCircle")
-        .on("mouseover", (d, i) => highlightPathToRoot(d, i, 'hsl(60, 50%, 64%)') )
+        .on("mouseover", (d, i) => highlightPathToRoot(d, i, highlightColor) )
         .on("mouseleave", (d, i) => highlightPathToRoot(d, i, null) )
         .on("click", function(d, i) { return d.data.obj ? qs.setRoot(d.data.obj) : null } )
 
     let linkCircles = leafNode.selectAll(".linkCircle")
         .on("click", (d, i) => collapse(d, i) )
-        .on("mouseover", (d, i) => highlightPathToRoot(d, i, "green"))
-        .on("mouseleave", (d, i) => highlightPathToRoot(d, i, null))        
-
+        .on("mouseover", (d, i) => highlightCuttableNodes(d, i, cuttableColor) )
+        .on("mouseleave", (d, i) => highlightCuttableNodes(d, i, null) )
+        
     leafNode.append("text")
-        .on("mouseleave", (d, i) => highlightPathToRoot(d, i, null) )
         .style("alignment-baseline", "middle")
         .attr("class", (d, i) => { 
             if (i === 0) return "rootText"
@@ -131,18 +131,16 @@ function visualize(treeData, rootDetails) {
 
     leafNode.selectAll(".leafText")
         .on("click", function(d, i) { return qs.setRoot(d.data.obj) } )
-        .on("mouseover", (d, i) => highlightPathToRoot(d, i, 'hsl(60, 50%, 64%)') )
+        .on("mouseover", (d, i) => highlightPathToRoot(d, i, highlightColor) )
+        .on("mouseleave", (d, i) => highlightPathToRoot(d, i, null) )
         
-
     leafNode.selectAll(".linkText")
         .on("click", (d, i) => collapse(d, i) )
-        .on("mouseover", (d, i) => highlightPathToRoot(d, i, 'green') )
-        
+        .on("mouseover", (d, i) => highlightCuttableNodes(d, i, cuttableColor) )
+        .on("mouseleave", (d, i) => highlightCuttableNodes(d, i, null) )
 
     function collapse(d, i) {
-        console.log(d)
         if (d.children[0].data.name === "collapsed") {
-            console.log("expanding..")
             reattachNodes(treeData, d.data)
             visualize(treeData, rootDetails)
         } else
@@ -193,6 +191,43 @@ function visualize(treeData, rootDetails) {
         })
 
         d3.select(this).style("cursor", "default"); 
+    }
+
+    function highlightCuttableNodes(d, i, color) {
+        console.log("highlighting cuttable nodes..")
+        let descendants = d.descendants().slice(1)
+
+        let circles = leafNode.selectAll("g>circle")
+        circles.each(function(datum) {
+            for (let j=0; j < descendants.length; j++) {
+                if (datum === descendants[j])
+                {
+                    d3.select(this).style("fill", color)
+                    d3.select(this).style("cursor", "pointer"); 
+                }
+            }
+        })   
+        
+        let links = group.selectAll("path")
+        links.each(function(datum) {
+            for (let j=0; j < descendants.length; j++) {
+                if (datum === descendants[j])
+                    {
+                        d3.select(this).style("stroke", color)
+                        d3.select(this).style("cursor", "pointer"); 
+                    }
+            }
+        })
+
+        let texts = leafNode.selectAll("text")
+        texts.each(function(datum) {
+            for (let j=0; j < descendants.length; j++) {
+                if (datum === descendants[j])
+                    {
+                        d3.select(this).style("cursor", "pointer"); 
+                    }
+            }
+        })
     }
 }
 
