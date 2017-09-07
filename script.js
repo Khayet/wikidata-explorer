@@ -81,17 +81,40 @@ function visualize(treeData) {
                     "translate(" + arrangeInCircle(d.x, d.y, svgWidth, height)[0] + "," + arrangeInCircle(d.x, d.y, svgWidth, height)[1] + ")" 
             })
 
-    leafNode.append("circle")
+    let circles = leafNode.append("circle")
         .attr("class", (d, i) => {
             if (i === 0) return "rootCircle"
             if (d.data.obj === null) return "linkCircle"
             return "leafCircle" 
         })
-        
+    
+    function highlightPathToRoot(d, i, color) {
+        let element = d
+        let path = []                
+        while (element) {
+            path.push(element)
+            element = element.parent
+        }
+
+        let circles = leafNode.selectAll("g>circle")
+        circles.each(function(datum) {
+            for (let i=0; i < path.length; i++) {
+                if (datum === path[i]) {d3.select(this).style("fill", color)}
+            }
+        })
+
+        let links = group.selectAll("path")
+        links.each(function(datum) {
+            for (let i=0; i < path.length; i++) {
+                if (datum === path[i]) {d3.select(this).style("stroke", color)}
+            }
+        })
+    }
+
     leafNode.selectAll(".leafCircle")
         .on("click", function(d, i) { return qs.setRoot(d.data.obj) } )
-        .on("mouseover", function() {  d3.select(this).style("fill", highlightColor)})
-        .on("mouseleave", function() { d3.select(this).style("fill", null) })
+        .on("mouseover", (d, i) => { highlightPathToRoot(d, i, "green") })
+        .on("mouseleave", (d, i) => { highlightPathToRoot(d, i, null) })
 
     leafNode.append("text")
         .attr("class", (d, i) => { 
@@ -101,6 +124,7 @@ function visualize(treeData) {
          })
         .text(function(d) { return d.data.name; });
 }
+
 
 function arrangeInCircle(x, y, domainX, domainY) {
     let xScale = d3.scaleLinear()
