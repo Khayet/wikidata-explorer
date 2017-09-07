@@ -71,6 +71,11 @@ function visualize(treeData) {
                 // + " " + cP2[0] + "," + cP2[1]
                 // + " " + pX + "," + pY;
             })
+            // .on("click", (d, i) => collapse(d, i) )
+            .on("mouseover", (d, i) => highlightPathToRoot(d, i, "green"))
+            .on("mouseleave", (d, i) => highlightPathToRoot(d, i, null))
+
+    console.log(link)
 
     let leafNode = group.selectAll("g")
             .data(nodes.descendants())
@@ -88,6 +93,10 @@ function visualize(treeData) {
             return "leafCircle" 
         })
     
+    // function collapse(d, i) {
+    //     let links = group.selectAll("path")
+    // }
+
     function highlightPathToRoot(d, i, color) {
         let element = d
         let path = []                
@@ -98,23 +107,23 @@ function visualize(treeData) {
 
         let circles = leafNode.selectAll("g>circle")
         circles.each(function(datum) {
-            for (let i=0; i < path.length; i++) {
-                if (datum === path[i]) {d3.select(this).style("fill", color)}
+            for (let j=0; j < path.length; j++) {
+                if (datum === path[j]) {d3.select(this).style("fill", color)}
             }
         })
 
         let links = group.selectAll("path")
         links.each(function(datum) {
-            for (let i=0; i < path.length; i++) {
-                if (datum === path[i]) {d3.select(this).style("stroke", color)}
+            for (let j=0; j < path.length; j++) {
+                if (datum === path[j]) {d3.select(this).style("stroke", color)}
             }
         })
     }
 
     leafNode.selectAll(".leafCircle")
         .on("click", function(d, i) { return qs.setRoot(d.data.obj) } )
-        .on("mouseover", (d, i) => { highlightPathToRoot(d, i, "green") })
-        .on("mouseleave", (d, i) => { highlightPathToRoot(d, i, null) })
+        .on("mouseover", (d, i) => highlightPathToRoot(d, i, "green") )
+        .on("mouseleave", (d, i) => highlightPathToRoot(d, i, null) )
 
     leafNode.append("text")
         .attr("class", (d, i) => { 
