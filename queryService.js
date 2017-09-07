@@ -12,6 +12,7 @@ let currentTreeDepth = 0
 let functionQueue = []
 
 const queryLimit = 5
+let numQueries = 0
 
 my.setCallback = function(newCallback) { callback = newCallback }
 
@@ -19,14 +20,52 @@ my.setRoot = function(newRoot) {
     if (callback === null) {
         console.log("ERROR: No callback function defined.")
     }
+
+    root = newRoot
     
-    // TODO: check if there's a subtree that can be used
+    if (currentTreeDepth > 0) {
+        let node = findNodeByObject(newRoot)
+        if (node !== undefined && node.children.length > 0) {
+            currentTree = node
+            currentTreeDepth = getDepth(currentTree) - 1
+            functionQueue.push([completeTree, undefined])
+            executeQueue()
+            return
+        }
+    }
+
+    functionQueue.push([constructTree, undefined])
     currentTree = {}
     currentTreeDepth = 0
-
-    root = newRoot 
-    functionQueue.push([constructTree, undefined])
     executeQueue()
+}
+
+function findNodeByObject(obj) {
+    // breadth first search in currentTree for node with passed object
+
+    let queue = currentTree.children
+    let max = queue.length, i = 0
+
+    while (i < max)
+    {
+        var node = queue[i]
+        if (node.obj === obj) { return node }
+
+        queue = queue.concat(node.children)
+        max += node.children.length
+        i++
+    }
+}
+
+function getDepth(obj) {
+    let depth = 0, tmp = 0
+    if (obj.children) {
+        obj.children.forEach((d) => {
+            tmp = getDepth(d)
+            if (tmp > depth) { depth = tmp }
+        })
+    }
+    return 1+ depth
 }
 
 function constructTree() {
@@ -50,6 +89,8 @@ function getWikidata(entity=root) {
         "GET", 
         "https://query.wikidata.org/sparql?query=" + query + "&format=json", true)
     httpRequest.send()
+
+    numQueries++
 }
 
 function constructQueryPropsAndObjects(entity, limit = 10) {
@@ -106,6 +147,9 @@ function parseResponse(res) {
 
     tree.name = results[0].entityLabel.value
     tree.children = []
+
+    // if the property is already a child, push object to its children
+    // if the property is not a child yet, push it to the tree's children
 
     let propNames = new Set()
 
@@ -182,6 +226,7 @@ function completeTree() {
     let queue = currentTree.children
     let max = queue.length, i = 0
 
+    // find remaining empty nodes
     while (i < max)
     {
         var node = queue[i]
@@ -204,6 +249,8 @@ function executeQueue() {
     {
         console.log("queryService is done!")
         console.log(currentTree)
+        console.log("number of queries: " + numQueries)
+        numQueries = 0
         callback(currentTree)
     }
 }
