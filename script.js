@@ -5,7 +5,10 @@ const qs = queryService
 qs.setCallback(visualize)
 qs.setRoot(selectedEntity)
 
+let collapsedNodes = {}
+
 function visualize(treeData, rootDetails) {
+    var rootDetails = rootDetails
     var margin = { top: 20, right: 20, bottom: 20, left: 20 },
         width =  $('#chart').width() - margin.left - margin.right,
         height =  $(window).height() - margin.top - margin.bottom;
@@ -74,6 +77,11 @@ function visualize(treeData, rootDetails) {
                 // + " " + cP2[0] + "," + cP2[1]
                 // + " " + pX + "," + pY;
             })
+            .on("click", (d, i) => collapse(d, i) )
+            .on("mouseover", (d, i) => highlightPathToRoot(d, i, "green"))
+            .on("mouseleave", (d, i) => highlightPathToRoot(d, i, null))
+
+    console.log(link)
 
     let leafNode = group.selectAll("g")
             .data(nodes.descendants())
@@ -84,26 +92,85 @@ function visualize(treeData, rootDetails) {
                     "translate(" + arrangeInCircle(d.x, d.y, svgWidth, height)[0] + "," + arrangeInCircle(d.x, d.y, svgWidth, height)[1] + ")" 
             })
 
-    leafNode.append("circle")
+    let circles = leafNode.append("circle")
         .attr("class", (d, i) => {
             if (i === 0) return "rootCircle"
+            if (d.data.name === "collapsed") return "collapsedCircle"
             if (d.data.obj === null) return "linkCircle"
             return "leafCircle" 
         })
-        
+    
+    function collapse(d, i) {
+        if (d.data.name === "collapsed") {
+            console.log(collapsedNodes)
+            reattachNodes(treeData, d.data.parent)
+            visualize(treeData, rootDetails)
+        } else
+        {
+            cutNode(treeData, d)
+            visualize(treeData, rootDetails)
+        }
+    }
+
+    function highlightPathToRoot(d, i, color) {
+        let element = d
+        let path = []                
+        while (element) {
+            path.push(element)
+            element = element.parent
+        }
+
+        let circles = leafNode.selectAll("g>circle")
+        circles.each(function(datum) {
+            for (let j=0; j < path.length; j++) {
+                if (datum === path[j])
+                {
+                    d3.select(this).style("fill", color)
+                    d3.select(this).style("cursor", "pointer"); 
+                }
+            }
+        })
+
+        let links = group.selectAll("path")
+        links.each(function(datum) {
+            for (let j=0; j < path.length; j++) {
+                if (datum === path[j])
+                    {
+                        d3.select(this).style("stroke", color)
+                        d3.select(this).style("cursor", "pointer"); 
+                    }
+            }
+        })
+
+        let texts = leafNode.selectAll("text")
+        texts.each(function(datum) {
+            for (let j=0; j < path.length; j++) {
+                if (datum === path[j])
+                    {
+                        d3.select(this).style("cursor", "pointer"); 
+                    }
+            }
+        })
+
+        d3.select(this).style("cursor", "default"); 
+    }
+
     leafNode.selectAll(".leafCircle")
         .on("click", function(d, i) { return qs.setRoot(d.data.obj) } )
-        .on("mouseover", function() {  d3.select(this).style("fill", highlightColor)})
-        .on("mouseleave", function() { d3.select(this).style("fill", null) })
+        .on("mouseover", (d, i) => highlightPathToRoot(d, i, 'hsl(60, 50%, 64%)') )
+        .on("mouseleave", (d, i) => highlightPathToRoot(d, i, null) )
 
     leafNode.append("text")
+        .on("click", function(d, i) { return qs.setRoot(d.data.obj) } )
+        .on("mouseover", (d, i) => highlightPathToRoot(d, i, 'hsl(60, 50%, 64%)') )
+        .on("mouseleave", (d, i) => highlightPathToRoot(d, i, null) )
         // .style("text-anchor","start") 
-        .style("text-anchor", (d, i) => { 
-            if (i === 0) return "start"
-            if (d.data.obj === null) return "middle"
-            return "start"
-         })
-        .style("alignment-baseline", "text-after-edge")
+        // .style("text-anchor", (d, i) => { 
+        //     if (i === 0) return "start"
+        //     if (d.data.obj === null) return "middle"
+        //     return "start"
+        //  })
+        .style("alignment-baseline", "middle")
         .attr("startOffset","100%")
         .attr("class", (d, i) => { 
             if (i === 0) return "rootText"
@@ -111,6 +178,55 @@ function visualize(treeData, rootDetails) {
             return "leafText" 
          })
         .text(function(d) { return d.data.name; });
+}
+
+function cutNode(tree, cutNode) {
+    let queue = tree.children
+    let max = queue.length, i = 0
+
+    while (i < max)
+    {
+        var node = queue[i]
+        // this is not a guarantee that objects are cut and re-attached at the same position, 
+        // but sufficient for our purposes
+        if (node.obj === cutNode.data.obj && node.parent === cutNode.data.parent) 
+        {
+            console.log(node.children)
+            collapsedNodes[node.obj] = node.children
+            node.children = [ {"name": "collapsed", 
+                               "children": [],
+                               "parent": node } ] 
+            console.log(collapsedNodes)
+            return
+        }
+
+        queue = queue.concat(node.children)
+        max += node.children.length
+        i++
+    }
+}
+
+function reattachNodes(tree, connectingNode) {
+    console.log("Reattaching node.. ")
+    console.log(connectingNode)
+    let queue = tree.children
+    let max = queue.length, i = 0
+
+    while (i < max)
+    {
+        var node = queue[i]
+        if (node === connectingNode && node.parent === connectingNode.parent) {
+            console.log(collapsedNodes[node.obj])
+            node.children = collapsedNodes[node.obj]
+            console.log(node)
+            collapsedNodes = []
+            return
+        }
+
+        queue = queue.concat(node.children)
+        max += node.children.length
+        i++
+    }
 }
 
 function arrangeInCircle(x, y, domainX, domainY) {
