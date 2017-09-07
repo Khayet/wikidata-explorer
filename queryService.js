@@ -6,6 +6,8 @@ let my = {}
 
 let callback = null
 let root = ""
+let oldRoots = []
+let rootDetails = []
 
 let currentTree = {}
 let currentTreeDepth = 0
@@ -21,7 +23,16 @@ my.setRoot = function(newRoot) {
         console.log("ERROR: No callback function defined.")
     }
 
+    if (root != "")
+    {
+        oldRoots.push(root)
+    }
+    
     root = newRoot
+    rootDetails = []
+
+    functionQueue.push([getRootDetails, undefined])
+    executeQueue()
     
     if (currentTreeDepth > 0) {
         let node = findNodeByObject(newRoot)
@@ -38,6 +49,15 @@ my.setRoot = function(newRoot) {
     currentTree = {}
     currentTreeDepth = 0
     executeQueue()
+}
+
+my.back = function ()
+{
+    if (oldRoots.length != 0)
+    {
+        root = ""
+        my.setRoot(oldRoots.pop())
+    }
 }
 
 function findNodeByObject(obj) {
@@ -83,7 +103,7 @@ function getWikidata(entity=root) {
     // document.getElementById("sampleEntity").textContent = root
     $('#sampleEntity').textContent = root
     
-    const httpRequest = new XMLHttpRequest()
+    let httpRequest = new XMLHttpRequest()
     httpRequest.addEventListener("load", () => { parseResponse(httpRequest.responseText) })
     httpRequest.open(
         "GET", 
@@ -91,6 +111,56 @@ function getWikidata(entity=root) {
     httpRequest.send()
 
     numQueries++
+}
+
+function getRootDetails(entity=root)
+{
+    const queryRootDetails = constructQueryRootDetails(entity) 
+
+    let httpRequest = new XMLHttpRequest()
+    httpRequest.addEventListener("load", () => {
+        let res = JSON.parse(httpRequest.responseText)
+        let contextNode = d3.select("#context").node()
+        rootDetails["label"] = res.results.bindings[0].entityLabel.value
+        if (typeof res.results.bindings[0]["desc"] !== 'undefined')
+        {
+            rootDetails["desc"] = res.results.bindings[0].desc.value
+        }
+        if (typeof res.results.bindings[0]["pic"] !== 'undefined')
+        {
+            let filename = res.results.bindings[0].pic.value.split("/")
+            // rootDetails["imageFilename"] = filename[filename.length - 1]
+            getPicture(filename[filename.length - 1])
+        }
+        // context.html = res.results.bindings[0].entityLabel.value + res.results.bindings[0].pic.value
+    })
+    httpRequest.open(
+        "GET", 
+        "https://query.wikidata.org/sparql?query=" + queryRootDetails + "&format=json", true)
+    httpRequest.send()
+}
+
+function getPicture(filename)
+{
+    let url = decodeURI(filename)
+    let str = url.replace(/ /g, '_')
+    let md5 = $.md5(str)
+    let imageUrl = "https://upload.wikimedia.org/wikipedia/commons/"+ md5[0] + "/" + md5[0] + md5[1] + "/" + str
+    rootDetails["imageUrl"] = imageUrl
+}
+
+function constructQueryRootDetails(entity)
+{
+    const query = 
+    "SELECT ?entityLabel ?entityDescription ?pic ?desc " +
+    "WHERE  { " +
+    entity + " rdfs:label ?entityLabel . " +
+    "OPTIONAL { " + entity + " wdt:P18 ?pic. " + " } " +
+    "SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". " + entity + " schema:description ?desc . } " +
+    "FILTER (LANG(?entityLabel) = 'en') . }" +
+    "LIMIT 10 "
+
+    return query
 }
 
 function constructQueryPropsAndObjects(entity, limit = 10) {
@@ -255,7 +325,7 @@ function executeQueue() {
         console.log(currentTree)
         console.log("number of queries: " + numQueries)
         numQueries = 0
-        callback(currentTree)
+        callback(currentTree, rootDetails)
     }
 }
 

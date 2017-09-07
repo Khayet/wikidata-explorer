@@ -5,7 +5,7 @@ const qs = queryService
 qs.setCallback(visualize)
 qs.setRoot(selectedEntity)
 
-function visualize(treeData) {
+function visualize(treeData, rootDetails) {
     var margin = { top: 20, right: 20, bottom: 20, left: 20 },
         width =  $('#chart').width() - margin.left - margin.right,
         height =  $(window).height() - margin.top - margin.bottom;
@@ -31,7 +31,10 @@ function visualize(treeData) {
 
     let rootName = treeData["name"]
     const context = d3.select("#context")
-    context.append("text").text(rootName)
+    d3.select("#label").html(rootDetails.label)
+    d3.select("#image").attr('src', rootDetails.imageUrl)
+    d3.select("#description").html(rootDetails.desc)
+
 
     let treemap = d3.tree(rootName)
         .size([svgWidth, height])
@@ -94,6 +97,14 @@ function visualize(treeData) {
         .on("mouseleave", function() { d3.select(this).style("fill", null) })
 
     leafNode.append("text")
+        // .style("text-anchor","start") 
+        .style("text-anchor", (d, i) => { 
+            if (i === 0) return "start"
+            if (d.data.obj === null) return "middle"
+            return "start"
+         })
+        .style("alignment-baseline", "text-after-edge")
+        .attr("startOffset","100%")
         .attr("class", (d, i) => { 
             if (i === 0) return "rootText"
             if (d.data.obj === null) return "linkText"
