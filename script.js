@@ -5,6 +5,8 @@ const qs = queryService
 qs.setCallback(visualize)
 qs.setRoot(selectedEntity)
 
+let collapsedNodes = {}
+
 function visualize(treeData) {
     var margin = { top: 20, right: 20, bottom: 20, left: 20 },
         width =  $('#chart').width() - margin.left - margin.right,
@@ -71,7 +73,7 @@ function visualize(treeData) {
                 // + " " + cP2[0] + "," + cP2[1]
                 // + " " + pX + "," + pY;
             })
-            // .on("click", (d, i) => collapse(d, i) )
+            .on("click", (d, i) => collapse(d, i) )
             .on("mouseover", (d, i) => highlightPathToRoot(d, i, "green"))
             .on("mouseleave", (d, i) => highlightPathToRoot(d, i, null))
 
@@ -89,13 +91,22 @@ function visualize(treeData) {
     let circles = leafNode.append("circle")
         .attr("class", (d, i) => {
             if (i === 0) return "rootCircle"
+            if (d.data.name === "collapsed") return "collapsedCircle"
             if (d.data.obj === null) return "linkCircle"
             return "leafCircle" 
         })
     
-    // function collapse(d, i) {
-    //     let links = group.selectAll("path")
-    // }
+    function collapse(d, i) {
+        if (d.data.name === "collapsed") {
+            console.log(collapsedNodes)
+            reattachNodes(treeData, d.data.parent)
+            visualize(treeData)
+        } else
+        {
+            cutNode(treeData, d)
+            visualize(treeData)
+        }
+    }
 
     function highlightPathToRoot(d, i, color) {
         let element = d
@@ -134,6 +145,54 @@ function visualize(treeData) {
         .text(function(d) { return d.data.name; });
 }
 
+function cutNode(tree, cutNode) {
+    let queue = tree.children
+    let max = queue.length, i = 0
+
+    while (i < max)
+    {
+        var node = queue[i]
+        // this is not a guarantee that objects are cut and re-attached at the same position, 
+        // but sufficient for our purposes
+        if (node.obj === cutNode.data.obj && node.parent === cutNode.data.parent) 
+        {
+            console.log(node.children)
+            collapsedNodes[node.obj] = node.children
+            node.children = [ {"name": "collapsed", 
+                               "children": [],
+                               "parent": node } ] 
+            console.log(collapsedNodes)
+            return
+        }
+
+        queue = queue.concat(node.children)
+        max += node.children.length
+        i++
+    }
+}
+
+function reattachNodes(tree, connectingNode) {
+    console.log("Reattaching node.. ")
+    console.log(connectingNode)
+    let queue = tree.children
+    let max = queue.length, i = 0
+
+    while (i < max)
+    {
+        var node = queue[i]
+        if (node === connectingNode && node.parent === connectingNode.parent) {
+            console.log(collapsedNodes[node.obj])
+            node.children = collapsedNodes[node.obj]
+            console.log(node)
+            collapsedNodes = []
+            return
+        }
+
+        queue = queue.concat(node.children)
+        max += node.children.length
+        i++
+    }
+}
 
 function arrangeInCircle(x, y, domainX, domainY) {
     let xScale = d3.scaleLinear()
