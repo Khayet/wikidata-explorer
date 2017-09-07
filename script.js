@@ -6,8 +6,12 @@ qs.setCallback(visualize)
 qs.setRoot(selectedEntity)
 
 let collapsedNodes = {}
+let reusableData = {}
 
 function visualize(treeData, rootDetails) {
+    console.log("you called?")
+    console.log(treeData)
+
     var rootDetails = rootDetails
     var margin = { top: 20, right: 20, bottom: 20, left: 20 },
         width =  $('#chart').width() - margin.left - margin.right,
@@ -32,15 +36,11 @@ function visualize(treeData, rootDetails) {
         .style("opacity", 1)
         .transition().duration(500).style("opacity", 0).remove();
 
-    // svg.selectAll("g")
-    //     .data([])
-    //     .exit()
-    //     .remove();
 
     const group = svg.append("g")
         .attr("transform", "translate(" + center[0] + "," + center[1] + ")")
 
-    let rootName = treeData["name"]
+
     const context = d3.select("#context")
     d3.select("#label").html(rootDetails.label)
     d3.select("#image").attr('src', rootDetails.imageUrl)
@@ -50,13 +50,45 @@ function visualize(treeData, rootDetails) {
     else
         d3.select("#description").html(rootDetails.desc)
 
-
-    let treemap = d3.tree(rootName)
-        .size([svgWidth, height])
-    
     let nodes = d3.hierarchy(treeData, function(d) {
         return d.children
-    })
+    }).sort((a, b) => { return a.data.name.toLowerCase().localeCompare(b.data.name.toLowerCase()) })
+
+    let outers = findAllNodesOfHeight(nodes, 1)
+    let inners = findAllNodesOfHeight(nodes, 3)
+    
+    // rule of thumb
+    if (Object.keys(collapsedNodes).length === 0 && (svgWidth / outers.length) < 27) {
+        console.log("too much")
+        while (outers.length > 0)
+        {
+            let d = outers.shift()
+            if (d.children.length > 1) { collapse(d, treeData, false) }
+        }
+
+        outers = findAllNodesOfHeight(nodes, 1)
+
+        if (svgWidth / outers.length < 27) {
+            console.log("still too much")
+            while (svgWidth / inners.length < 200)
+            {
+                let d = inners.shift()
+                if (d.children[0].children.length > 1) { console.log("collapse inner"); treeData = collapse(d, treeData, false) }
+            }
+        }
+
+        console.log(treeData)
+    }
+    
+    nodes = d3.hierarchy(treeData, function(d) {
+        return d.children
+    }).sort((a, b) => { return a.data.name.toLowerCase().localeCompare(b.data.name.toLowerCase()) })
+
+    let treemap = d3.tree(nodes)
+        .size([svgWidth, height])
+        .separation(function separation(a, b) {
+            return (a.parent == b.parent ? 1 : 1)
+        })
 
     nodes = treemap(nodes)
 
@@ -75,8 +107,8 @@ function visualize(treeData, rootDetails) {
                 let pX = toCircular(d.parent.x, d.parent.y, svgWidth, height)[0]
                 let pY = toCircular(d.parent.x, d.parent.y, svgWidth, height)[1]
 
-                // let cP1 = [myX, pY]
-                // let cP2 = [(myX + pX) / 2.0, (myY + pY) / 2.0]
+                let cP1 = [myX, pY]
+                let cP2 = [(myX + pX) / 2.0, (myY + pY) / 2.0]
 
                 linkPosX.push( (myX + pX) / 2 )
                 linkPosY.push( (myY + pY) / 2 )
@@ -109,14 +141,13 @@ function visualize(treeData, rootDetails) {
             return "leafCircle" 
         })
 
-
     leafNode.selectAll(".leafCircle")
         .on("mouseover", (d, i) => highlightPathToRoot(d, i, highlightColor) )
         .on("mouseleave", (d, i) => highlightPathToRoot(d, i, null) )
         .on("click", function(d, i) { return d.data.obj ? qs.setRoot(d.data.obj) : null } )
 
     let linkCircles = leafNode.selectAll(".linkCircle")
-        .on("click", (d, i) => collapse(d, i) )
+        .on("click", (d, i) => collapse(d) )
         .on("mouseover", (d, i) => highlightCuttableNodes(d, i, cuttableColor) )
         .on("mouseleave", (d, i) => highlightCuttableNodes(d, i, null) )
         
@@ -135,18 +166,26 @@ function visualize(treeData, rootDetails) {
         .on("mouseleave", (d, i) => highlightPathToRoot(d, i, null) )
         
     leafNode.selectAll(".linkText")
-        .on("click", (d, i) => collapse(d, i) )
+        .on("click", (d, i) => collapse(d) )
         .on("mouseover", (d, i) => highlightCuttableNodes(d, i, cuttableColor) )
         .on("mouseleave", (d, i) => highlightCuttableNodes(d, i, null) )
 
-    function collapse(d, i) {
+
+
+    function collapse(d, data=treeData, doVis=true) {
+        console.log("collapsing..")
         if (d.children[0].data.name === "collapsed") {
-            reattachNodes(treeData, d.data)
-            visualize(treeData, rootDetails)
+            reattachNodes(data, d.data)
         } else
         {
-            cutNode(treeData, d)
-            visualize(treeData, rootDetails)
+            cutNode(data, d)
+        }
+        if (doVis) 
+        { 
+            visualize(data, rootDetails) 
+        }
+        else {
+            return data
         }
     }
 
@@ -194,7 +233,6 @@ function visualize(treeData, rootDetails) {
     }
 
     function highlightCuttableNodes(d, i, color) {
-        console.log("highlighting cuttable nodes..")
         let descendants = d.descendants().slice(1)
 
         let circles = leafNode.selectAll("g>circle")
@@ -247,6 +285,7 @@ function cutNode(tree, cutNode) {
         if (treeNode.name === cutNode.data.name &&
             treeNode.parent === cutNode.data.parent) 
         {
+            console.log("cutting node..")
             collapsedNodes[treeNode.name] = treeNode.children
             treeNode.children = [ {"name": "collapsed", 
                                "children": [],
@@ -286,7 +325,7 @@ function toCircular(x, y, domainX, domainY) {
 
     let yScale = d3.scaleLinear()
         .domain([0, domainY])
-        .range([0, (domainY / 2.0)-60])
+        .range([0, (domainY / 2.0)-30])
 
     x = xScale(x)
     y = yScale(y)
@@ -295,4 +334,24 @@ function toCircular(x, y, domainX, domainY) {
     let yNew = y * Math.sin(x)
 
     return [xNew, yNew]
+}
+
+function findAllNodesOfHeight(tree, height) {
+    let nodes = []
+    let queue = tree.children
+    let max = queue.length, i = 0
+
+    while (i < max)
+    {
+        var node = queue[i]
+        if (node.height === height && node.children[0].name !== "collapsed") { nodes.push(node) }
+
+        if (node.children) {
+            queue = queue.concat(node.children)
+            max += node.children.length
+        }
+        i++
+    }
+
+    return nodes
 }
