@@ -13,7 +13,7 @@ let currentTree = {}
 let currentTreeDepth = 0
 let functionQueue = []
 
-const queryLimit = 7
+const queryLimit = 15
 let numQueries = 0
 
 my.setCallback = function(newCallback) { callback = newCallback }
@@ -36,17 +36,6 @@ my.setRoot = function(newRoot) {
 
     functionQueue.push([getRootDetails, undefined])
     executeQueue()
-    
-    if (currentTreeDepth > 0) {
-        let node = findNodeByObject(newRoot)
-        if (node !== undefined && node.children.length > 0) {
-            currentTree = node
-            currentTreeDepth = getDepth(currentTree) - 1
-            functionQueue.push([completeTree, undefined])
-            executeQueue()
-            return
-        }
-    }
 
     functionQueue.push([constructTree, undefined])
     currentTree = {}
@@ -63,34 +52,6 @@ my.back = function ()
     }
 }
 
-function findNodeByObject(obj) {
-    // breadth first search in currentTree for node with passed object
-
-    let queue = currentTree.children
-    let max = queue.length, i = 0
-
-    while (i < max)
-    {
-        var node = queue[i]
-        if (node.obj === obj) { return node }
-
-        queue = queue.concat(node.children)
-        max += node.children.length
-        i++
-    }
-}
-
-function getDepth(obj) {
-    let depth = 0, tmp = 0
-    if (obj.children) {
-        obj.children.forEach((d) => {
-            tmp = getDepth(d)
-            if (tmp > depth) { depth = tmp }
-        })
-    }
-    return 1+ depth
-}
-
 function constructTree() {
     if (currentTreeDepth === 0)
     {
@@ -103,7 +64,6 @@ function constructTree() {
 function getWikipediaExtract(entity)
 {
     $.getJSON("https://www.wikidata.org/w/api.php?action=wbgetentities&format=json&props=sitelinks&sitefilter=enwiki&ids=" + entity.split(":")[1] + "&callback=?", function(data){
-        console.log(data);
         let title = data.entities[entity.split(":")[1]].sitelinks.enwiki.title
         $.getJSON("https://en.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&exintro=&explaintext=&titles=" + title + "&callback=?", function(data){
             let pages = data.query.pages
@@ -342,7 +302,7 @@ function executeQueue() {
         console.log(currentTree)
         console.log("number of queries: " + numQueries)
         numQueries = 0
-        callback(currentTree, rootDetails)
+        callback(currentTree, rootDetails, true)
     }
 }
 

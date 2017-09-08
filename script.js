@@ -6,12 +6,8 @@ qs.setCallback(visualize)
 qs.setRoot(selectedEntity)
 
 let collapsedNodes = {}
-let reusableData = {}
 
-function visualize(treeData, rootDetails) {
-    console.log("you called?")
-    console.log(treeData)
-
+function visualize(treeData, rootDetails, shouldCollapse=false) {
     var rootDetails = rootDetails
     var margin = { top: 20, right: 20, bottom: 20, left: 20 },
         width =  $('#chart').width() - margin.left - margin.right,
@@ -58,8 +54,8 @@ function visualize(treeData, rootDetails) {
     let inners = findAllNodesOfHeight(nodes, 3)
     
     // rule of thumb
-    if (Object.keys(collapsedNodes).length === 0 && (svgWidth / outers.length) < 27) {
-        console.log("too much")
+    if (shouldCollapse &&
+        (svgWidth / outers.length) < 27) {
         while (outers.length > 0)
         {
             let d = outers.shift()
@@ -69,17 +65,15 @@ function visualize(treeData, rootDetails) {
         outers = findAllNodesOfHeight(nodes, 1)
 
         if (svgWidth / outers.length < 27) {
-            console.log("still too much")
             while (svgWidth / inners.length < 200)
             {
                 let d = inners.shift()
-                if (d.children[0].children.length > 1) { console.log("collapse inner"); treeData = collapse(d, treeData, false) }
+                if (d.children[0].children.length > 1) { treeData = collapse(d, treeData, false) }
             }
         }
-
-        console.log(treeData)
     }
     
+    // Re-construct hierarchy after automatic collapsing
     nodes = d3.hierarchy(treeData, function(d) {
         return d.children
     }).sort((a, b) => { return a.data.name.toLowerCase().localeCompare(b.data.name.toLowerCase()) })
@@ -91,6 +85,15 @@ function visualize(treeData, rootDetails) {
         })
 
     nodes = treemap(nodes)
+
+
+    svg.selectAll("g")
+        .data([])
+        .exit().remove()
+
+
+    const group = svg.append("g")
+    .attr("transform", "translate(" + center[0] + "," + center[1] + ")")
 
     let linkPosX = []
     let linkPosY = []
@@ -170,10 +173,7 @@ function visualize(treeData, rootDetails) {
         .on("mouseover", (d, i) => highlightCuttableNodes(d, i, cuttableColor) )
         .on("mouseleave", (d, i) => highlightCuttableNodes(d, i, null) )
 
-
-
     function collapse(d, data=treeData, doVis=true) {
-        console.log("collapsing..")
         if (d.children[0].data.name === "collapsed") {
             reattachNodes(data, d.data)
         } else
@@ -285,7 +285,6 @@ function cutNode(tree, cutNode) {
         if (treeNode.name === cutNode.data.name &&
             treeNode.parent === cutNode.data.parent) 
         {
-            console.log("cutting node..")
             collapsedNodes[treeNode.name] = treeNode.children
             treeNode.children = [ {"name": "collapsed", 
                                "children": [],
