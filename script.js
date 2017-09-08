@@ -86,15 +86,6 @@ function visualize(treeData, rootDetails, shouldCollapse=false) {
 
     nodes = treemap(nodes)
 
-
-    svg.selectAll("g")
-        .data([])
-        .exit().remove()
-
-
-    const group = svg.append("g")
-    .attr("transform", "translate(" + center[0] + "," + center[1] + ")")
-
     let linkPosX = []
     let linkPosY = []
 
