@@ -8,6 +8,8 @@ qs.setRoot(selectedEntity)
 let collapsedNodes = {}
 
 function visualize(treeData, rootDetails, shouldCollapse=false) {
+    $("html,body,button").css("cursor", "default");
+
     var rootDetails = rootDetails
     var margin = { top: 20, right: 20, bottom: 20, left: 20 },
         width =  $('#chart').width() - margin.left - margin.right,

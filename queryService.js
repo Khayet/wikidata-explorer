@@ -26,6 +26,8 @@ my.setRoot = function(newRoot) {
         console.log("ERROR: No callback function defined.")
     }
 
+    $("html,body,button").css("cursor", "progress");
+
     if (root != "")
     {
         oldRoots.push(root)
