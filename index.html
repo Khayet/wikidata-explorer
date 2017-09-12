@@ -79,6 +79,46 @@
                 fill: black;
             }
 
+            .tt-query {
+              -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+                 -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+                      box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+            }
+
+            .tt-hint {
+              color: #999
+            }
+
+            .tt-menu {    /* used to be tt-dropdown-menu in older versions */
+              width: 422px;
+              margin-top: 4px;
+              padding: 4px 0;
+              background-color: #fff;
+              border: 1px solid #ccc;
+              border: 1px solid rgba(0, 0, 0, 0.2);
+              -webkit-border-radius: 4px;
+                 -moz-border-radius: 4px;
+                      border-radius: 4px;
+              -webkit-box-shadow: 0 5px 10px rgba(0,0,0,.2);
+                 -moz-box-shadow: 0 5px 10px rgba(0,0,0,.2);
+                      box-shadow: 0 5px 10px rgba(0,0,0,.2);
+            }
+
+            .tt-suggestion {
+              padding: 3px 20px;
+              line-height: 24px;
+            }
+
+            .tt-suggestion.tt-cursor,.tt-suggestion:hover {
+              color: #fff;
+              background-color: #0097cf;
+
+            }
+
+            .tt-suggestion p {
+              margin: 0;
+            }   
+
         </style>
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
     </head>
@@ -89,6 +129,7 @@
         <script src="queryService.js"></script>
         <script src="script.js"></script>
         <script src="jquery.md5.js"></script>
+        <script src="typeahead.js/typeahead.bundle.js"></script>
 		
 		<div class="container-fluid">
 			<div class="row">
@@ -103,15 +144,73 @@
 			        <svg id="graph"></svg>
 				</div>
 				<div class="col-md-3" style="margin: 15px;">
-					<p id="label" class="font-weight-bold"></p>
-					<img id="image" style="max-width:100%; max-height:100%;" style="padding:15px;">
-					<p id="description" style='font-family: "Times New Roman", Georgia, Serif; text-align: justify; margin-top: 1rem;'></p>
-					<a href="#" onclick="qs.back()">back</a>
+					<div class="row">
+						<div class="col-md-12">
+							<form>
+							  	<div class="form-row align-items-center">
+		  							<input class="typeahead form-control">
+									<div class="col-auto">
+										<button class="btn btn-primary" onclick="setr()">Set root</button>
+									</div>
+      							</div>
+	  						</form>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-12">
+							<p id="label" class="font-weight-bold" style="margin-top: 1rem;"></p>
+							<img id="image" style="max-width:100%; max-height:100%;" style="padding:15px;">
+							<p id="description" style='font-family: "Times New Roman", Georgia, Serif; text-align: justify; margin-top: 1rem;'></p>
+							<a href="#" onclick="qs.back()">back</a>
+						</div>
+					</div>
 				</div>
 				<div class="col-md-1" style="margin: 15px;">
 				</div>
 			</div>
        	</div>
+
+        <script>
+        	function setr()
+        	{
+        		console.log(selectedDatum);
+        		qs.setRoot("wd:" + selectedDatum.id);
+        	}
+
+            var wikidata = new Bloodhound({
+              datumTokenizer: function(datum) {
+                return Bloodhound.tokenizers.whitespace(datum.value);
+              },
+              queryTokenizer: Bloodhound.tokenizers.whitespace,
+              remote: {
+                dataType: 'jsonp',
+                wildcard: '%QUERY',
+                url: "https://www.wikidata.org/w/api.php?action=wbsearchentities&format=json&language=en&type=item&continue=0&search=%QUERY&callback=?",
+                transform: function(response) {
+                  // Map the remote source JSON array to a JavaScript object array
+                  return $.map(response.search, function(entity) {
+                    return {
+                      value: entity.label + " (" + entity.description + ")",
+                      id: entity.id,
+                      desc: description,
+                    };
+                  });
+                }
+              }
+            });
+
+            // Instantiate the Typeahead UI
+            $('.typeahead').typeahead(null, {
+              display: 'value',
+              source: wikidata
+            });
+
+        	var selectedDatum;
+
+			$('.typeahead').on('typeahead:selected', function(event, datum) {
+			  selectedDatum = datum;
+			});
+        </script>
 
     </body>
 </html>
