@@ -4,122 +4,7 @@
         <!-- <link rel="stylesheet" href="index.css"> -->
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
         <title>Wikidata explorer.</title>
-        <style>
-
-            svg {
-                background-color: #FAFAFA;
-            } 
-
-            .link {
-                fill: none;
-                stroke: hsl(233, 46%, 74%);
-                stroke-width: 4px;
-            }
-
-            .linkCircle {
-                r: 20;
-                stroke: none;
-                stroke-width: 0.14%;
-                fill: #FAFAFA;
-            }
-
-            .leafCircle {
-                r: 25;
-                stroke: none;
-                stroke-width: 0.14%;
-                fill: hsla(50, 99%, 65%, 0.5);
-            }
-
-            .collapsedCircle {
-                r: 5;
-                stroke: black;
-                stroke-width: 0.14%;
-                fill: yellowgreen;  
-            }
-
-            .leafText {
-                font-family: "Arial";
-                font-size: 100%;
-                text-anchor: middle;
-                fill: black;
-
-            }
-
-            .linkText {
-                font-family: "Arial";
-                font-size: 80%;
-                text-anchor: middle;
-                fill: black;
-            }
-
-            .rootCircle {
-                r: 30;
-                stroke: none;
-                fill: hsl(50, 99%, 90%);
-            }
-
-            .rootText {
-                font-family: "Arial";
-                font-size: 100%;
-                font-weight: 600;
-                text-anchor: middle;
-                fill: black;
-            }
-
-            .collapsedCircle {
-                r: 10;
-                stroke: none;
-                fill: hsl(40, 91%, 49%);
-            }
-
-            .collapsedCircleText {
-                font-family: "verdana";
-                font-size: 60%;
-                text-anchor: middle;
-                fill: black;
-            }
-
-            .tt-query {
-              -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
-                 -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
-                      box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
-            }
-
-            .tt-hint {
-              color: #999
-            }
-
-            .tt-menu {    /* used to be tt-dropdown-menu in older versions */
-              width: 422px;
-              margin-top: 4px;
-              padding: 4px 0;
-              background-color: #fff;
-              border: 1px solid #ccc;
-              border: 1px solid rgba(0, 0, 0, 0.2);
-              -webkit-border-radius: 4px;
-                 -moz-border-radius: 4px;
-                      border-radius: 4px;
-              -webkit-box-shadow: 0 5px 10px rgba(0,0,0,.2);
-                 -moz-box-shadow: 0 5px 10px rgba(0,0,0,.2);
-                      box-shadow: 0 5px 10px rgba(0,0,0,.2);
-            }
-
-            .tt-suggestion {
-              padding: 3px 20px;
-              line-height: 24px;
-            }
-
-            .tt-suggestion.tt-cursor,.tt-suggestion:hover {
-              color: #fff;
-              background-color: #0097cf;
-
-            }
-
-            .tt-suggestion p {
-              margin: 0;
-            }   
-
-        </style>
+        <link rel="stylesheet" type="text/css" href="styles.css">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
     </head>
 
@@ -129,8 +14,8 @@
         <script src="queryService.js"></script>
         <script src="script.js"></script>
         <script src="jquery.md5.js"></script>
-        <script src="typeahead.js/typeahead.bundle.js"></script>
-		
+        <!-- <script src="typeahead.js/typeahead.bundle.js"></script> -->
+
 		<div class="container-fluid">
 			<div class="row">
 				<div class="col-md-6" id="chart">
@@ -171,45 +56,46 @@
        	</div>
 
         <script>
-        	function setr()
-        	{
+          function setr()
+          {
+            let selectedDatum = document.getElementsByClassName('typeahead form-control')[0].value;
         		console.log(selectedDatum);
         		qs.setRoot("wd:" + selectedDatum.id);
         	}
 
-            var wikidata = new Bloodhound({
-              datumTokenizer: function(datum) {
-                return Bloodhound.tokenizers.whitespace(datum.value);
-              },
-              queryTokenizer: Bloodhound.tokenizers.whitespace,
-              remote: {
-                dataType: 'jsonp',
-                wildcard: '%QUERY',
-                url: "https://www.wikidata.org/w/api.php?action=wbsearchentities&format=json&language=en&type=item&continue=0&search=%QUERY&callback=?",
-                transform: function(response) {
-                  // Map the remote source JSON array to a JavaScript object array
-                  return $.map(response.search, function(entity) {
-                    return {
-                      value: entity.label + " (" + entity.description + ")",
-                      id: entity.id,
-                      desc: description,
-                    };
-                  });
-                }
-              }
-            });
+            // var wikidata = new Bloodhound({
+            //   datumTokenizer: function(datum) {
+            //     return Bloodhound.tokenizers.whitespace(datum.value);
+            //   },
+            //   queryTokenizer: Bloodhound.tokenizers.whitespace,
+            //   remote: {
+            //     dataType: 'jsonp',
+            //     wildcard: '%QUERY',
+            //     url: "https://www.wikidata.org/w/api.php?action=wbsearchentities&format=json&language=en&type=item&continue=0&search=%QUERY&callback=?",
+            //     transform: function(response) {
+            //       // Map the remote source JSON array to a JavaScript object array
+            //       return $.map(response.search, function(entity) {
+            //         return {
+            //           value: entity.label + " (" + entity.description + ")",
+            //           id: entity.id,
+            //           desc: description,
+            //         };
+            //       });
+            //     }
+            //   }
+            // });
 
             // Instantiate the Typeahead UI
-            $('.typeahead').typeahead(null, {
-              display: 'value',
-              source: wikidata
-            });
+            // $('.typeahead').typeahead(null, {
+            //   display: 'value',
+            //   source: wikidata
+            // });
 
-        	var selectedDatum;
+        	// var selectedDatum;
 
-			$('.typeahead').on('typeahead:selected', function(event, datum) {
-			  selectedDatum = datum;
-			});
+			// $('.typeahead').on('typeahead:selected', function(event, datum) {
+			//   selectedDatum = datum;
+			// });
         </script>
 
     </body>

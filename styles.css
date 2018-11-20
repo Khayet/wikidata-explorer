@@ -1,0 +1,60 @@
+svg {
+    background-color: #FAFAFA;
+}
+
+.link {
+    fill: none;
+    stroke: hsl(233, 46%, 74%);
+    stroke-width: 4px;
+}
+
+.linkCircle {
+    stroke: none;
+    stroke-width: 0.14%;
+    fill: hsla(10, 80%, 65%, 0.4);
+}
+
+.leafCircle {
+    stroke: none;
+    stroke-width: 0.14%;
+    fill: hsla(50, 99%, 65%, 0.5);
+}
+
+.leafText {
+    font-family: "Arial";
+    font-size: 100%;
+    text-anchor: middle;
+    fill: black;
+}
+
+.linkText {
+    font-family: "Arial";
+    font-size: 80%;
+    text-anchor: middle;
+    fill: black;
+}
+
+.rootCircle {
+    stroke: none;
+    fill: hsl(50, 99%, 90%);
+}
+
+.rootText {
+    font-family: "Arial";
+    font-size: 100%;
+    font-weight: 600;
+    text-anchor: middle;
+    fill: black;
+}
+
+.collapsedCircle {
+    stroke: none;
+    fill: hsl(40, 91%, 49%);
+}
+
+.collapsedCircleText {
+    font-family: "verdana";
+    font-size: 60%;
+    text-anchor: middle;
+    fill: black;
+}

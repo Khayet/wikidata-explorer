@@ -5,6 +5,19 @@ const qs = queryService
 qs.setCallback(visualize)
 qs.setRoot(selectedEntity)
 
+
+/**
+ * Map circle classes to their radius.
+ * This is a workaround for SVG 1.1 - SVG 2.0 will support geometric properties
+ * like 'r' (radius), so that we can use CSS to set the radius for an SVG circle.
+ */
+const circleRadii = {
+    "linkCircle": "15",
+    "leafCircle": "25",
+    "collapsedCircle": "10",
+    "rootCircle": "30",
+}
+
 let collapsedNodes = {}
 
 function visualize(treeData, rootDetails, shouldCollapse=false) {
@@ -27,7 +40,7 @@ function visualize(treeData, rootDetails, shouldCollapse=false) {
 
     const highlightColor = "hsl(60, 50%, 64%)"
     const cuttableColor = "darkred"
-    
+
     svg.selectAll("g")
         .data([])
         .exit()
@@ -54,7 +67,7 @@ function visualize(treeData, rootDetails, shouldCollapse=false) {
 
     let outers = findAllNodesOfHeight(nodes, 1)
     let inners = findAllNodesOfHeight(nodes, 3)
-    
+
     // rule of thumb
     if (shouldCollapse &&
         (svgWidth / outers.length) < 27) {
@@ -74,7 +87,7 @@ function visualize(treeData, rootDetails, shouldCollapse=false) {
             }
         }
     }
-    
+
     // Re-construct hierarchy after automatic collapsing
     nodes = d3.hierarchy(treeData, function(d) {
         return d.children
@@ -123,36 +136,49 @@ function visualize(treeData, rootDetails, shouldCollapse=false) {
     let leafNode = group.selectAll("g")
             .data(nodes.descendants())
         .enter().append("g")
-            .attr("transform", function(d, i) { 
-                return i === 0 ? 
+            .attr("transform", function(d, i) {
+                return i === 0 ?
                     "translate(" + 0 + "," + 0 + ")" :
-                    "translate(" + toCircular(d.x, d.y, svgWidth, height)[0] + "," + toCircular(d.x, d.y, svgWidth, height)[1] + ")" 
+                    "translate(" + toCircular(d.x, d.y, svgWidth, height)[0] + "," + toCircular(d.x, d.y, svgWidth, height)[1] + ")"
             })
 
-    let circles = leafNode.append("circle")
+    leafNode.append("circle")
         .attr("class", (d, i) => {
             if (i === 0) return "rootCircle"
             if (d.data.name === "collapsed") return "collapsedCircle"
             if (d.data.obj === null) return "linkCircle"
-            return "leafCircle" 
+            return "leafCircle"
         })
 
+
+    // TODO: style all circles either via DOM or via d3js
+    const rootCircle = document.getElementsByClassName("rootCircle")[0]
+    rootCircle.setAttribute("r", circleRadii["rootCircle"])
+
+    const collapsedCircles = document.getElementsByClassName("collapsedCircle")
+    for (let c of collapsedCircles) {
+        console.log(c)
+        c.setAttribute("r", circleRadii["collapsedCircle"])
+    }
+
     leafNode.selectAll(".leafCircle")
+        .attr("r", circleRadii["leafCircle"])
         .on("mouseover", (d, i) => highlightPathToRoot(d, i, highlightColor) )
         .on("mouseleave", (d, i) => highlightPathToRoot(d, i, null) )
         .on("click", function(d, i) { return d.data.obj ? qs.setRoot(d.data.obj) : null } )
 
     let linkCircles = leafNode.selectAll(".linkCircle")
+        .attr("r", circleRadii["linkCircle"])
         .on("click", (d, i) => collapse(d) )
         .on("mouseover", (d, i) => highlightCuttableNodes(d, i, cuttableColor) )
         .on("mouseleave", (d, i) => highlightCuttableNodes(d, i, null) )
-        
+
     leafNode.append("text")
         .style("alignment-baseline", "middle")
-        .attr("class", (d, i) => { 
+        .attr("class", (d, i) => {
             if (i === 0) return "rootText"
             if (d.data.obj === null) return "linkText"
-            return "leafText" 
+            return "leafText"
          })
         .text(function(d) { return d.data.name; });
 
@@ -160,7 +186,7 @@ function visualize(treeData, rootDetails, shouldCollapse=false) {
         .on("click", function(d, i) { return qs.setRoot(d.data.obj) } )
         .on("mouseover", (d, i) => highlightPathToRoot(d, i, highlightColor) )
         .on("mouseleave", (d, i) => highlightPathToRoot(d, i, null) )
-        
+
     leafNode.selectAll(".linkText")
         .on("click", (d, i) => collapse(d) )
         .on("mouseover", (d, i) => highlightCuttableNodes(d, i, cuttableColor) )
@@ -173,9 +199,9 @@ function visualize(treeData, rootDetails, shouldCollapse=false) {
         {
             cutNode(data, d)
         }
-        if (doVis) 
-        { 
-            visualize(data, rootDetails) 
+        if (doVis)
+        {
+            visualize(data, rootDetails)
         }
         else {
             return data
@@ -184,7 +210,7 @@ function visualize(treeData, rootDetails, shouldCollapse=false) {
 
     function highlightPathToRoot(d, i, color) {
         let element = d
-        let path = []                
+        let path = []
         while (element) {
             path.push(element)
             element = element.parent
@@ -196,7 +222,7 @@ function visualize(treeData, rootDetails, shouldCollapse=false) {
                 if (datum === path[j])
                 {
                     d3.select(this).style("fill", color)
-                    d3.select(this).style("cursor", "pointer"); 
+                    d3.select(this).style("cursor", "pointer");
                 }
             }
         })
@@ -207,7 +233,7 @@ function visualize(treeData, rootDetails, shouldCollapse=false) {
                 if (datum === path[j])
                     {
                         d3.select(this).style("stroke", color)
-                        d3.select(this).style("cursor", "pointer"); 
+                        d3.select(this).style("cursor", "pointer");
                     }
             }
         })
@@ -217,12 +243,12 @@ function visualize(treeData, rootDetails, shouldCollapse=false) {
             for (let j=0; j < path.length; j++) {
                 if (datum === path[j])
                     {
-                        d3.select(this).style("cursor", "pointer"); 
+                        d3.select(this).style("cursor", "pointer");
                     }
             }
         })
 
-        d3.select(this).style("cursor", "default"); 
+        d3.select(this).style("cursor", "default");
     }
 
     function highlightCuttableNodes(d, i, color) {
@@ -234,18 +260,18 @@ function visualize(treeData, rootDetails, shouldCollapse=false) {
                 if (datum === descendants[j])
                 {
                     d3.select(this).style("fill", color)
-                    d3.select(this).style("cursor", "pointer"); 
+                    d3.select(this).style("cursor", "pointer");
                 }
             }
-        })   
-        
+        })
+
         let links = group.selectAll("path")
         links.each(function(datum) {
             for (let j=0; j < descendants.length; j++) {
                 if (datum === descendants[j])
                     {
                         d3.select(this).style("stroke", color)
-                        d3.select(this).style("cursor", "pointer"); 
+                        d3.select(this).style("cursor", "pointer");
                     }
             }
         })
@@ -255,7 +281,7 @@ function visualize(treeData, rootDetails, shouldCollapse=false) {
             for (let j=0; j < descendants.length; j++) {
                 if (datum === descendants[j])
                     {
-                        d3.select(this).style("cursor", "pointer"); 
+                        d3.select(this).style("cursor", "pointer");
                     }
             }
         })
@@ -272,14 +298,14 @@ function cutNode(tree, cutNode) {
     {
         var treeNode = queue[i]
 
-        // this is not a guarantee that objects are cut and re-attached at the same position, 
+        // this is not a guarantee that objects are cut and re-attached at the same position,
         // but sufficient for our purposes
 
         if (treeNode.name === cutNode.data.name &&
-            treeNode.parent === cutNode.data.parent) 
+            treeNode.parent === cutNode.data.parent)
         {
             collapsedNodes[treeNode.name] = treeNode.children
-            treeNode.children = [ {"name": "collapsed", 
+            treeNode.children = [ {"name": "collapsed",
                                "children": [],
                                "parent": treeNode } ]
             return
