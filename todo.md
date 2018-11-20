@@ -1,8 +1,10 @@
 # TODO:
 
-- BUG: circles don't show in firefox (invalid css property)
+- BUG: css property 'r' of svg circles is specified in SVG 2.0, which isn't fully supported yet --> does not work in firefox
 - move css to its own file
+- remove bootstrap
 - remove autocomplete functionality for now
 - remove typeahead
 - remove jQuery
 - add loading indicator when loading
+- update d3.js?
