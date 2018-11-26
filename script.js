@@ -5,7 +5,6 @@ const qs = queryService
 qs.setCallback(visualize)
 qs.setRoot(selectedEntity)
 
-
 /**
  * Map circle classes to their radius.
  * This is a workaround for SVG 1.1 -- SVG 2.0 will support geometric properties
@@ -24,12 +23,15 @@ function visualize(treeData, rootDetails, shouldCollapse=false) {
     const bodyEl = document.querySelector('body')
     bodyEl.style.cursor = 'default';
 
-    var rootDetails = rootDetails
-    var margin = { top: 20, right: 20, bottom: 20, left: 20 },
-        width =  $('#chart').width() - margin.left - margin.right,
-        height =  $(window).height() - margin.top - margin.bottom;
+    const margin = { top: 20, right: 20, bottom: 20, left: 20 };
 
-    var svg = d3.select( '#graph' )
+    const chartStyle = window.getComputedStyle(document.getElementById('chart'));
+    let width = parseInt(chartStyle.getPropertyValue('width'))
+                - margin.left
+                - margin.right;
+    let height = window.innerHeight - margin.top - margin.bottom;
+
+    let svg = d3.select( '#graph' )
                     .attr('preserveAspectRatio', 'xMinYMin meet')
                     .attr('viewBox', '0 0 ' +  ( width ) + ' ' + ( height ) )
                     .attr('width', '100%')
@@ -296,7 +298,7 @@ function cutNode(tree, cutNode) {
 
     while (i < max)
     {
-        var treeNode = queue[i]
+        let treeNode = queue[i]
 
         // this is not a guarantee that objects are cut and re-attached at the same position,
         // but sufficient for our purposes
@@ -323,7 +325,7 @@ function reattachNodes(tree, connectingNode) {
 
     while (i < max)
     {
-        var node = queue[i]
+        let node = queue[i]
         if (node === connectingNode && node.parent === connectingNode.parent && node.name === connectingNode.name) {
             node.children = collapsedNodes[node.name]
             collapsedNodes[node.name] = []
@@ -361,7 +363,7 @@ function findAllNodesOfHeight(tree, height) {
 
     while (i < max)
     {
-        var node = queue[i]
+        let node = queue[i]
         if (node.height === height && node.children[0].name !== "collapsed") { nodes.push(node) }
 
         if (node.children) {

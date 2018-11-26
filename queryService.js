@@ -1,6 +1,6 @@
 "use strict"
 
-var queryService = (function () {
+let queryService = (function () {
 
 let my = {}
 
@@ -267,7 +267,7 @@ function findEmptyNodeWithName(tree, name) {
 
     while (i < max)
     {
-        var node = queue[i]
+        let node = queue[i]
         if (node.children.length === 0 && node.name === name) { return node }
 
         queue = queue.concat(node.children)
@@ -283,7 +283,7 @@ function completeTree() {
     // find remaining empty nodes
     while (i < max)
     {
-        var node = queue[i]
+        let node = queue[i]
         if (node.children.length === 0) { functionQueue.push([getWikidata, node.obj]) }
 
         queue = queue.concat(node.children)
@@ -296,7 +296,7 @@ function completeTree() {
 function executeQueue() {
     if (functionQueue.length > 0)
     {
-        var tuple = functionQueue.shift();
+        let tuple = functionQueue.shift();
         (tuple[0])(tuple[1])
     }
     else
