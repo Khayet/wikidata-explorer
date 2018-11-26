@@ -50,19 +50,19 @@ function visualize(treeData, rootDetails, shouldCollapse=false) {
         .style("opacity", 1)
         .transition().duration(500).style("opacity", 0).remove();
 
-
     const group = svg.append("g")
         .attr("transform", "translate(" + center[0] + "," + center[1] + ")")
-
 
     const context = d3.select("#context")
     d3.select("#label").html(rootDetails.label)
     d3.select("#image").attr('src', rootDetails.imageUrl)
     // d3.select("#description").html(rootDetails.extract)
-    if (typeof rootDetails.extract !== 'undefined')
+    if (typeof rootDetails.extract !== 'undefined') {
         d3.select("#description").html(rootDetails.extract)
-    else
+    }
+    else {
         d3.select("#description").html(rootDetails.desc)
+    }
 
     let nodes = d3.hierarchy(treeData, function(d) {
         return d.children

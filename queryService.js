@@ -66,22 +66,20 @@ function constructTree() {
 
 function getWikipediaExtract(entity)
 {
+    // TODO: do this using the fetch API
     $.getJSON("https://www.wikidata.org/w/api.php?action=wbgetentities&format=json&props=sitelinks&sitefilter=enwiki&ids=" + entity.split(":")[1] + "&callback=?", function(data){
         let title = data.entities[entity.split(":")[1]].sitelinks.enwiki.title
         $.getJSON("https://en.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&exintro=&explaintext=&titles=" + title + "&callback=?", function(data){
             let pages = data.query.pages
             rootDetails["extract"] = pages[Object.keys(pages)[0]].extract
         })
-
     })
 }
 
 function getWikidata(entity=root) {
     const query = constructQueryPropsAndObjects(entity, queryLimit)
 
-    // document.getElementById("sampleEntity").textContent = root
-    $('#sampleEntity').textContent = root
-
+    // TODO: do this using the fetch API
     let httpRequest = new XMLHttpRequest()
     httpRequest.addEventListener("load", () => { parseResponse(httpRequest.responseText) })
     httpRequest.open(
@@ -96,6 +94,7 @@ function getRootDetails(entity=root)
 {
     const queryRootDetails = constructQueryRootDetails(entity)
 
+    // TODO: do this using the fetch API
     let httpRequest = new XMLHttpRequest()
     httpRequest.addEventListener("load", () => {
         let res = JSON.parse(httpRequest.responseText)
