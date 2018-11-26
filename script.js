@@ -8,7 +8,7 @@ qs.setRoot(selectedEntity)
 
 /**
  * Map circle classes to their radius.
- * This is a workaround for SVG 1.1 - SVG 2.0 will support geometric properties
+ * This is a workaround for SVG 1.1 -- SVG 2.0 will support geometric properties
  * like 'r' (radius), so that we can use CSS to set the radius for an SVG circle.
  */
 const circleRadii = {
@@ -21,7 +21,8 @@ const circleRadii = {
 let collapsedNodes = {}
 
 function visualize(treeData, rootDetails, shouldCollapse=false) {
-    $("html,body,button").css("cursor", "default");
+    const bodyEl = document.querySelector('body')
+    bodyEl.style.cursor = 'default';
 
     var rootDetails = rootDetails
     var margin = { top: 20, right: 20, bottom: 20, left: 20 },
@@ -157,7 +158,6 @@ function visualize(treeData, rootDetails, shouldCollapse=false) {
 
     const collapsedCircles = document.getElementsByClassName("collapsedCircle")
     for (let c of collapsedCircles) {
-        console.log(c)
         c.setAttribute("r", circleRadii["collapsedCircle"])
     }
 

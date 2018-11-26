@@ -26,13 +26,14 @@ my.setRoot = function(newRoot) {
         console.log("ERROR: No callback function defined.")
     }
 
-    $("html,body,button").css("cursor", "progress");
+    const bodyEl = document.querySelector('body');
+    bodyEl.style.cursor = 'progress';
 
     if (root != "")
     {
         oldRoots.push(root)
     }
-    
+
     root = newRoot
     rootDetails = []
 
@@ -76,15 +77,15 @@ function getWikipediaExtract(entity)
 }
 
 function getWikidata(entity=root) {
-    const query = constructQueryPropsAndObjects(entity, queryLimit) 
+    const query = constructQueryPropsAndObjects(entity, queryLimit)
 
     // document.getElementById("sampleEntity").textContent = root
     $('#sampleEntity').textContent = root
-    
+
     let httpRequest = new XMLHttpRequest()
     httpRequest.addEventListener("load", () => { parseResponse(httpRequest.responseText) })
     httpRequest.open(
-        "GET", 
+        "GET",
         "https://query.wikidata.org/sparql?query=" + query + "&format=json", true)
     httpRequest.send()
 
@@ -93,7 +94,7 @@ function getWikidata(entity=root) {
 
 function getRootDetails(entity=root)
 {
-    const queryRootDetails = constructQueryRootDetails(entity) 
+    const queryRootDetails = constructQueryRootDetails(entity)
 
     let httpRequest = new XMLHttpRequest()
     httpRequest.addEventListener("load", () => {
@@ -114,7 +115,7 @@ function getRootDetails(entity=root)
         // context.html = res.results.bindings[0].entityLabel.value + res.results.bindings[0].pic.value
     })
     httpRequest.open(
-        "GET", 
+        "GET",
         "https://query.wikidata.org/sparql?query=" + queryRootDetails + "&format=json", true)
     httpRequest.send()
 }
@@ -130,7 +131,7 @@ function getPicture(filename)
 
 function constructQueryRootDetails(entity)
 {
-    const query = 
+    const query =
     "SELECT ?entityLabel ?entityDescription ?pic ?desc " +
     "WHERE  { " +
     entity + " rdfs:label ?entityLabel . " +
@@ -146,7 +147,7 @@ function constructQueryPropsAndObjects(entity, limit = 10) {
     // Queries all properties associated entities of the given entity.
     // See: https://stackoverflow.com/questions/25100224/how-to-get-a-list-of-all-wikidata-properties
     // Also: https://query.wikidata.org/ example: data of douglas adams
-    
+
     const query =
     "SELECT ?entityLabel ?prop ?propLabel ?object ?objectLabel " +
     "WHERE  { " +
@@ -162,7 +163,7 @@ function constructQueryPropsAndObjects(entity, limit = 10) {
     "} " +
     "LIMIT " + limit
 
-    // const query = 
+    // const query =
     // "PREFIX entity: <http://www.wikidata.org/entity/> " +
     // "SELECT ?propUrl ?propLabel ?valUrl ?valLabel ?picture " +
     // "WHERE { " +
@@ -182,15 +183,15 @@ function constructQueryPropsAndObjects(entity, limit = 10) {
     // "FILTER (lang(?propLabel) = 'en' )} " +
     // "ORDER BY ?propUrl ?valUrl " +
     // "LIMIT 50"
- 
+
     // console.log(query)
     return query
-} 
+}
 
 function parseResponse(res) {
     // console.log("Parsing response..")
     const response = JSON.parse(res)
-    const results = response.results.bindings 
+    const results = response.results.bindings
 
     const tree = {}
 
@@ -199,7 +200,7 @@ function parseResponse(res) {
 
     let propNames = new Set()
 
-    for (let i = 0; i < results.length; i++) 
+    for (let i = 0; i < results.length; i++)
     {
         const objUrlParts = results[i].object.value.split("/")
         const propLabel = results[i].propLabel.value
@@ -209,13 +210,13 @@ function parseResponse(res) {
             let cont = false
             for (let j = 0; j < tree.children.length; j++)
             {
-                if (tree.children[j].name === propLabel) 
-                { 
+                if (tree.children[j].name === propLabel)
+                {
                     tree.children[j].children.push( { "name": results[i].objectLabel.value,
                                              "children": [],
-                                             "parent": tree.children[j],              
+                                             "parent": tree.children[j],
                                              "prop": propLabel,
-                                             "obj": "wd:" + objUrlParts[objUrlParts.length -1], 
+                                             "obj": "wd:" + objUrlParts[objUrlParts.length -1],
                                             } )
                     break
                 }
@@ -229,10 +230,10 @@ function parseResponse(res) {
                             "prop": null,
                             "obj": null
                           }
-            
+
             newProp.children.push( { "name": results[i].objectLabel.value,
                                      "children": [],
-                                     "parent": newProp,                     
+                                     "parent": newProp,
                                      "prop": propLabel,
                                      "obj": "wd:" + objUrlParts[objUrlParts.length -1],
                                     })
